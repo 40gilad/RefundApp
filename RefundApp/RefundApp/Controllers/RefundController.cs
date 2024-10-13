@@ -9,12 +9,12 @@ namespace RefundApp.Controllers
     public class RefundController : ControllerBase
     {
         private readonly ILogger<RefundController> logger;
-        private readonly RefundRepository repository;
+        private readonly PsudoRefundDbService repository;
 
         public RefundController(ILogger<RefundController> _logger)
         {
             logger = _logger;
-            repository = new RefundRepository();
+            repository = new PsudoRefundDbService();
         }
 
         [HttpGet]
