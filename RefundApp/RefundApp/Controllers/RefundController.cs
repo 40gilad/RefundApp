@@ -11,29 +11,75 @@ namespace RefundApp.Controllers
         private readonly ILogger<RefundController> logger;
         private readonly RefundRepository repository;
 
-
         public RefundController(ILogger<RefundController> _logger)
         {
             logger = _logger;
             repository = new RefundRepository();
         }
 
-        [HttpGet("{Qstring}")]
+        [HttpGet]
         public ActionResult<List<RefundModel>> Get()
         {
-            return Ok(repository.GetAll());
+            try
+            {
+                var refund = repository.Get();
+                return Ok(refund);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex.Message);
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpGet("{OrderId}")]
+        public ActionResult<RefundModel> Get(string OrderId)
+        {
+            try
+            {
+                var refund = repository.Get(OrderId);
+                return Ok(refund);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                logger.LogError(ex.Message);
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex.Message);
+                return StatusCode(500,ex.Message);
+            }
         }
 
         [HttpPost]
-        public ActionResult<List<RefundModel>> Post([FromBody] RefundModel refund)
+        public IActionResult Post([FromBody] RefundModel refund)
         {
+            
             if (refund == null)
             {
+                logger.LogError("refund is null");
                 return BadRequest("Refund data is null.");
             }
 
             repository.Add(refund);
-            return CreatedAtAction(nameof(Get), new { id = refund.Id }, refund);
+            logger.LogInformation($"added new refund:\n{refund.ToString}\n");
+            return Ok($"Refund {refund.OrderId} added successfully.");
+        }
+
+        [HttpDelete("{OrderId}")]
+        public IActionResult Delete(string OrderId)
+        {
+            try
+            {
+                repository.Remove(OrderId);
+                return Ok();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                logger.LogError(ex.Message);
+                return StatusCode(500, ex.Message);
+            }
         }
 
     }
