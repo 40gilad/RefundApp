@@ -34,6 +34,11 @@
             Reason = other.Reason;
         }
 
+        public override string ToString()
+        {
+            return $"{{\nOrderId: {OrderId},\n CustomerName: {CustomerName},\n RefundDate: {RefundDate:yyyy-MM-dd},\n Amount: {Amount},\n Reason: {Reason}\n}}";
+        }
+
     }
 
     /*
