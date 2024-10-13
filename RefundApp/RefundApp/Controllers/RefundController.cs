@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using RefundApp.Models;
-using RefundApp.Repositories;
+using RefundApp.PsudoServices;
 
 namespace RefundApp.Controllers
 {
@@ -9,12 +9,10 @@ namespace RefundApp.Controllers
     public class RefundController : ControllerBase
     {
         private readonly ILogger<RefundController> logger;
-        private readonly PsudoRefundDbService repository;
 
         public RefundController(ILogger<RefundController> _logger)
         {
             logger = _logger;
-            repository = new PsudoRefundDbService();
         }
 
         [HttpGet]
@@ -22,7 +20,7 @@ namespace RefundApp.Controllers
         {
             try
             {
-                var refund = repository.Get();
+                var refund = PsudoRefundDbService.Instance().Get();
                 return Ok(refund);
             }
             catch (Exception ex)
@@ -37,7 +35,7 @@ namespace RefundApp.Controllers
         {
             try
             {
-                var refund = repository.Get(OrderId);
+                var refund = PsudoRefundDbService.Instance().Get(OrderId);
                 return Ok(refund);
             }
             catch (KeyNotFoundException ex)
@@ -57,12 +55,8 @@ namespace RefundApp.Controllers
         {
             
             if (refund == null)
-            {
-                logger.LogError("refund is null");
                 return BadRequest("Refund data is null.");
-            }
-
-            repository.Add(refund);
+            PsudoRefundDbService.Instance().Add(refund);
             logger.LogInformation($"added new refund:\n{refund.ToString}\n");
             return Ok($"Refund {refund.OrderId} added successfully.");
         }
@@ -72,7 +66,7 @@ namespace RefundApp.Controllers
         {
             try
             {
-                repository.Remove(OrderId);
+                PsudoRefundDbService.Instance().Remove(OrderId);
                 return Ok();
             }
             catch (KeyNotFoundException ex)
