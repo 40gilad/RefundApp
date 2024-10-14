@@ -30,12 +30,12 @@ namespace RefundApp.Controllers
             }
         }
 
-        [HttpGet("{OrderId}")]
-        public ActionResult<RefundModel> Get(string OrderId)
+        [HttpGet("RefundById")]
+        public ActionResult<RefundModel> GetRefundById(string UMail, string OrderId)
         {
             try
             {
-                var refund = PsudoRefundDbService.Instance().Get(OrderId);
+                var refund = PsudoRefundDbService.Instance().GetByOrderId(UMail, OrderId);
                 return Ok(refund);
             }
             catch (KeyNotFoundException ex)
@@ -47,6 +47,26 @@ namespace RefundApp.Controllers
             {
                 logger.LogError(ex.Message);
                 return StatusCode(500,ex.Message);
+            }
+        }
+
+        [HttpGet("RefundsByMail")]
+        public ActionResult<Dictionary<string,RefundModel>> GetRefundsByMail(string UMail)
+        {
+            try
+            {
+                var refund = PsudoRefundDbService.Instance().GetByUserEmail(UMail);
+                return Ok(refund);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                logger.LogError(ex.Message);
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex.Message);
+                return StatusCode(500, ex.Message);
             }
         }
 

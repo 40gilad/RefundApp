@@ -5,13 +5,13 @@ namespace RefundApp.PsudoServices
 {
     public class PsudoRefundDbService
     {
-        private static Dictionary<string, RefundModel> refunds;
+        private static Dictionary<string, Dictionary<string, RefundModel>> refunds;
         private static PsudoRefundDbService instance;
         private static readonly object lockObj = new object();
 
         private PsudoRefundDbService()
         {
-            refunds = new Dictionary<string, RefundModel>();
+            refunds = new Dictionary<string, Dictionary<string, RefundModel>>();
         }
 
         public static PsudoRefundDbService Instance()
@@ -24,25 +24,36 @@ namespace RefundApp.PsudoServices
             }
         }
 
-        public Dictionary<string, RefundModel> Get()
+        public Dictionary<string, Dictionary<string, RefundModel>> Get()
         {
-            refunds = new Dictionary<string, RefundModel>();
             return refunds;
         }
 
-        public RefundModel Get(string order_id)
+        public Dictionary<string, RefundModel> GetByUserEmail(string u_mail)
         {
-            if (refunds==null || !refunds.ContainsKey(order_id))
-                throw new KeyNotFoundException($"No refund found with OrderId: {order_id}");
-            return refunds[order_id];
+            if (refunds==null || !refunds.ContainsKey(u_mail))
+                throw new KeyNotFoundException($"No refunds found with user mail: {u_mail}");
+            return refunds[u_mail];
+        }
+
+        public RefundModel GetByOrderId(string u_mail,string order_id)
+        {
+            Dictionary<string, RefundModel> temp = GetByUserEmail(u_mail);
+            if (!temp.ContainsKey(order_id))
+                throw new KeyNotFoundException($"No refunds found withwith user mail: {u_mail} and order id: {order_id}");
+            return temp[order_id];
         }
 
         public void Add(RefundModel refund)
         {
-            refunds = new Dictionary<string, RefundModel>();
-
             if (refund != null)
-                refunds.Add(refund.OrderId, refund);
+            {
+                if (!refunds.ContainsKey(refund.UEmail))
+                    refunds[refund.UEmail] = new Dictionary<string, RefundModel>();
+                refunds[refund.UEmail][refund.OrderId] = refund;
+            }
+            else
+                throw new ArgumentNullException("User mail or refund cannot be null");
 
         }
 
