@@ -57,11 +57,13 @@ namespace RefundApp.PsudoServices
 
         }
 
-        public void Remove(string order_id)
+        public void Remove(string u_mail,string order_id)
         {
-            if (!refunds.ContainsKey(order_id))
+            if (!refunds.ContainsKey(u_mail))
+                throw new KeyNotFoundException($"No refund found with Email: {u_mail}");
+            if (!refunds[u_mail].ContainsKey(order_id))
                 throw new KeyNotFoundException($"No refund found with OrderId: {order_id}");
-            refunds.Remove(order_id);
+            refunds[u_mail].Remove(order_id);
         }
     }
 }

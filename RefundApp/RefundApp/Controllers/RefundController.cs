@@ -81,12 +81,12 @@ namespace RefundApp.Controllers
             return Ok($"Refund {refund.OrderId} added successfully.");
         }
 
-        [HttpDelete("{OrderId}")]
-        public IActionResult Delete(string OrderId)
+        [HttpDelete("DeleteById")]
+        public IActionResult Delete(string UMail, string OrderId)
         {
             try
             {
-                PsudoRefundDbService.Instance().Remove(OrderId);
+                PsudoRefundDbService.Instance().Remove(UMail,OrderId);
                 return Ok();
             }
             catch (KeyNotFoundException ex)
