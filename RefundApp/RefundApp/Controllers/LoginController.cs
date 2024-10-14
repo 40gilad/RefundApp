@@ -98,10 +98,7 @@ namespace RefundApp.Controllers
             var storedUser = PsudoUserDbService.Instance().Get(user.UEmail);
             var hashedPassword = PasswordHasher.HashPassword(user.UPassword);
 
-            if (!PasswordHasher.VerifyPassword(storedUser.UPassword, user.UPassword))
-                return false;
-
-            return true;
+            return PasswordHasher.VerifyPassword(storedUser.UPassword, user.UPassword);
         }
 
     }
