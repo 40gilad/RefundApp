@@ -2,23 +2,23 @@
 {
     public class UserModel
     {
-        public string Uid { get; set; }
         public string UName { get; set; }
+        public string UEmail { get; set; }
         public string UPassword { get; set; }
 
         public UserModel() { }
 
-        public UserModel(string u_id, string u_name, string u_password)
+        public UserModel(string u_name, string e_mail, string u_password)
         {
-            if (string.IsNullOrWhiteSpace(u_id))
-                throw new ArgumentException("User ID cannot be null or empty", nameof(u_id));
             if (string.IsNullOrWhiteSpace(u_password))
                 throw new ArgumentException("Password cannot be null or empty", nameof(u_password));
+            if (string.IsNullOrWhiteSpace(e_mail))
+                throw new ArgumentException("Email cannot be null or empty", nameof(u_password));
             if (string.IsNullOrWhiteSpace(u_name))
                 throw new ArgumentException("User Name cannot be null or empty", nameof(u_name));
 
-            Uid = u_id;
             UName = u_name;
+            UEmail = e_mail;
             UPassword = u_password;
         }
 
@@ -27,14 +27,14 @@
             if (other == null)
                 throw new ArgumentNullException(nameof(other), "Other UserModel cannot be null");
 
-            Uid = other.Uid;
             UName = other.UName;
+            UEmail = other.UEmail;
             UPassword = other.UPassword;
         }
 
         public override string ToString()
         {
-            return $"{{\nUser Id: {Uid}\nUser Name: {UName}\n}}";
+            return $"{{\nUser Mail: {UEmail}\n User Name: {UName}\n}}";
         }
     }
 }

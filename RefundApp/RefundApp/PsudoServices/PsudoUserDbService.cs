@@ -30,21 +30,21 @@ namespace RefundApp.PsudoServices
             return users;
         }
 
-        public UserModel Get(string user_id)
+        public UserModel Get(string user_mail)
         {
-            if (!users.ContainsKey(user_id))
-                throw new KeyNotFoundException($"No refund found with OrderId: {user_id}");
-            return users[user_id];
+            if (!users.ContainsKey(user_mail))
+                throw new KeyNotFoundException($"No user found with Email: {user_mail}");
+            return users[user_mail];
         }
 
         public void Add(UserModel user)
         {
             if (user != null)
             {
-                if (users.ContainsKey(user.Uid))
-                    throw new InvalidOperationException($"User ID {user.Uid} already exists.");
+                if (users.ContainsKey(user.UEmail))
+                    throw new InvalidOperationException($"User Email {user.UEmail} already exists.");
 
-                users.Add(user.Uid, user);
+                users.Add(user.UEmail, user);
             }
         }
 
@@ -52,14 +52,14 @@ namespace RefundApp.PsudoServices
         {
             if (u == null)
                 throw new NullReferenceException();
-            else users[u.Uid].UName = u.UName;
+            else users[u.UEmail].UName = u.UName;
         }
 
-        public void Remove(string user_id)
+        public void Remove(string user_mail)
         {
-            if (!users.ContainsKey(user_id))
-                throw new KeyNotFoundException($"No user found with UserId: {user_id}");
-            users.Remove(user_id);
+            if (!users.ContainsKey(user_mail))
+                throw new KeyNotFoundException($"No user found with Email: {users[user_mail].UEmail}");
+            users.Remove(user_mail);
         }
     }
 }

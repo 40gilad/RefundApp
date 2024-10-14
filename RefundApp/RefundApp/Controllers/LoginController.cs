@@ -15,8 +15,9 @@ namespace RefundApp.Controllers
             logger = _logger;
         }
 
+        [Route("Register")]
         [HttpPost]
-        public IActionResult Post([FromBody] UserModel user)
+        public IActionResult Register([FromBody] UserModel user)
         {
             //register logic
             
@@ -27,7 +28,7 @@ namespace RefundApp.Controllers
                 user.UPassword = PasswordHasher.HashPassword(user.UPassword);
                 PsudoUserDbService.Instance().Add(user);
                 logger.LogInformation($"added new user:\n{user.ToString}\n");
-                return Ok($"User {user.Uid} added successfully.");
+                return Ok($"User {user.UName} added successfully.");
             }
             catch (InvalidOperationException ex)
             {
@@ -35,22 +36,18 @@ namespace RefundApp.Controllers
             }
         }
 
-        [Route("login")]
         [HttpPost]
-        public IActionResult Login([FromBody] UserModel user)
+        public IActionResult Post([FromBody] UserModel user)
         {
             if (user == null)
                 return BadRequest("User data is null.");
 
             try
             {
-                var storedUser = PsudoUserDbService.Instance().Get(user.Uid);
-                var hashedPassword = PasswordHasher.HashPassword(user.UPassword);
-
-                if (!PasswordHasher.VerifyPassword(storedUser.UPassword, user.UPassword))
+                if(!UserAuth(user))
                     return BadRequest("Invalid password.");
-
                 return Ok("Login successful.");
+
             }
             catch (KeyNotFoundException ex)
             {
@@ -66,7 +63,7 @@ namespace RefundApp.Controllers
             UserModel u;
             try
             {
-                u = PsudoUserDbService.Instance().Get(user.Uid);
+                u = PsudoUserDbService.Instance().Get(user.UEmail);
             }
             catch (KeyNotFoundException ex)
             {
@@ -78,19 +75,33 @@ namespace RefundApp.Controllers
             return Ok();
         }
 
-        [HttpDelete("{UserId}")]
-        public IActionResult Delete(string UserId)
+        [HttpDelete]
+        public IActionResult Delete([FromBody] UserModel user)
         {
             try
             {
-                PsudoUserDbService.Instance().Remove(UserId);
-                return Ok();
+                if (!UserAuth(user))
+                    return BadRequest("Invalid password.");
+                string uname=user.UName;
+                PsudoUserDbService.Instance().Remove(user.UEmail);
+                return Ok($"user {uname} removed successfuly");
             }
             catch (KeyNotFoundException ex)
             {
                 logger.LogError(ex.Message);
                 return StatusCode(500, ex.Message);
             }
+        }
+
+        private bool UserAuth(UserModel user)
+        {
+            var storedUser = PsudoUserDbService.Instance().Get(user.UEmail);
+            var hashedPassword = PasswordHasher.HashPassword(user.UPassword);
+
+            if (!PasswordHasher.VerifyPassword(storedUser.UPassword, user.UPassword))
+                return false;
+
+            return true;
         }
 
     }
