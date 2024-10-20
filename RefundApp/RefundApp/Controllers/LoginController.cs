@@ -36,8 +36,8 @@ namespace RefundApp.Controllers
             }
         }
 
-        [Route("Login")]
-        public IActionResult Post([FromBody] UserModel user)
+        [HttpPost]
+        public IActionResult Login([FromBody] UserModel user)
         {
             if (user == null)
                 return BadRequest("User data is null.");

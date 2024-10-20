@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using RefundApp.Models;
 using RefundApp.PsudoServices;
-using Microsoft.AspNetCore.Http;
-using System.Linq;
-using System.Text.Json;
+using System.Net.Http.Headers;
 
 namespace RefundApp.Controllers
 {
@@ -12,44 +10,55 @@ namespace RefundApp.Controllers
     public class GatewayController : ControllerBase
     {
         private readonly ILogger<GatewayController> logger;
+        private readonly HttpClient httpClient;
 
-        public GatewayController(ILogger<GatewayController> _logger)
+        private static readonly Dictionary<string, string> serviceEndpoints = new()
+        {
+            { "register", "https://localhost:7017/Login/Register" },
+            { "login", "https://localhost:32769/Login" }
+        };
+
+
+        public GatewayController(ILogger<GatewayController> _logger, HttpClient _httpClient)
         {
             logger = _logger;
+            httpClient = _httpClient;
         }
 
         [HttpPost("ProcessRequest")]
-        public IActionResult ProcessRequest(string route, [FromBody] Dictionary<string, string> data)
+        public async Task<IActionResult> ProcessRequest(string route, [FromBody] UserModel user)
         {
-            var sessionId = HttpContext.Session.GetString("SessionId");
+            httpClient.DefaultRequestHeaders.Accept.Clear();
+            httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            logger.LogInformation("Processing request for route: {Route}", route);
+
+            if (user == null)
+            {
+                logger.LogWarning("Invalid user data.");
+                return BadRequest("Invalid user data.");
+            }
+
             string lower_route = route.ToLowerInvariant();
 
-            if (lower_route == "register")
+            if (!serviceEndpoints.ContainsKey(route))
+                return BadRequest("Invalid service.");
+            try
             {
-                UserModel userModel = new UserModel(data);
-                if (userModel == null)
-                {
-                    return BadRequest("Invalid user data.");
-                }
+                var response = await httpClient.PostAsJsonAsync(serviceEndpoints[route], user);
 
-                return RedirectToAction("Register", "Login", userModel);
+                if (response.IsSuccessStatusCode)
+                    return Ok(await response.Content.ReadAsStringAsync());
+
+                logger.LogWarning("Error calling service for route: {Route}, StatusCode: {StatusCode}", lower_route, response.StatusCode);
+                return StatusCode((int)response.StatusCode, await response.Content.ReadAsStringAsync());
+            }
+            catch (HttpRequestException ex)
+            {
+                logger.LogError(ex, "Error calling service for route: {Route}", lower_route);
+                return StatusCode(500, ex.Message);
             }
 
-            //if (string.IsNullOrEmpty(sessionId) || !IsValidSession(sessionId))
-            //    return Unauthorized("Invalid or expired session.");
 
-            switch (lower_route)
-            {
-                case "login":
-                    return RedirectToAction("Post", "Login", data);
-                case "addrefund":
-                    return RedirectToAction("Post", "Refund", data);
-                case "getrefund":
-                    return RedirectToAction("Get", "Refund");
-
-                default:
-                    return BadRequest("Invalid route.");
-            }
         }
 
         private bool IsValidSession(string sessionId)

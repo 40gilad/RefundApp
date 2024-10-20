@@ -1,11 +1,19 @@
-﻿using System.Xml.Linq;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Xml.Linq;
 
 namespace RefundApp.Models
 {
     public class UserModel
     {
+        [Required]
         public string UName { get; set; }
+
+        [Required]
+        [EmailAddress]
         public string UEmail { get; set; }
+
+        [Required]
+        [DataType(DataType.Password)]
         public string UPassword { get; set; }
         public string SessionId { get; set; }
 
@@ -34,6 +42,7 @@ namespace RefundApp.Models
             UName = other.UName;
             UEmail = other.UEmail;
             UPassword = other.UPassword;
+            SessionId = other.SessionId;
         }
 
         public UserModel(Dictionary<string, string> data)

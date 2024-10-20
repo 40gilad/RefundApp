@@ -1,7 +1,11 @@
+using RefundApp.Controllers;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
+builder.Services.AddHttpClient<GatewayController>();
+
 
 // Add session support
 builder.Services.AddDistributedMemoryCache();
@@ -14,6 +18,7 @@ builder.Services.AddSession(options =>
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
 
 var app = builder.Build();
 
