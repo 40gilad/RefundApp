@@ -36,7 +36,7 @@ namespace RefundApp.Controllers
             }
         }
 
-        [HttpPost]
+        [Route("Login")]
         public IActionResult Post([FromBody] UserModel user)
         {
             if (user == null)
@@ -46,8 +46,14 @@ namespace RefundApp.Controllers
             {
                 if(!UserAuth(user))
                     return BadRequest("Invalid password.");
-                return Ok("Login successful.");
 
+                string sessionId = Guid.NewGuid().ToString();
+                user.SessionId = sessionId;
+                PsudoUserDbService.Instance().Update(user);
+
+                HttpContext.Session.SetString("SessionId", sessionId);
+
+                return Ok(new { Message = "Login successful.", SessionId = sessionId });
             }
             catch (KeyNotFoundException ex)
             {
