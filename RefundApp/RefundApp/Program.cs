@@ -1,9 +1,17 @@
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
+// Add session support
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(600); //10 hours session
+    options.Cookie.HttpOnly = true; // cannot read cookie with javascript
+    options.Cookie.IsEssential = true; //GDPR 
+});
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -17,6 +25,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// Add session middleware before UseAuthorization
+app.UseSession();
 
 app.UseAuthorization();
 
