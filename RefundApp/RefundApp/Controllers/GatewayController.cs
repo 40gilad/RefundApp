@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 using RefundApp.Models;
 using RefundApp.PsudoServices;
 using System.Net.Http.Headers;
@@ -12,10 +13,17 @@ namespace RefundApp.Controllers
         private readonly ILogger<GatewayController> logger;
         private readonly HttpClient httpClient;
 
-        private static readonly Dictionary<string, string> serviceEndpoints = new()
+        private static Dictionary<string, string> serviceEndpoints = new()
         {
             { "register", "https://localhost:7017/Login/Register" },
-            { "login", "https://localhost:32769/Login" }
+            { "login", "https://localhost:7017/Login" }
+        };
+
+        private static Dictionary<string, string> sessionServiceEndpoints = new()
+        {
+            { "refund", "https://localhost:7017/Refund" },
+            { "a", "https://localhost:7017/Login" },
+            { "b", "https://localhost:7017/Login" }
         };
 
 
@@ -40,8 +48,9 @@ namespace RefundApp.Controllers
 
             string lower_route = route.ToLowerInvariant();
 
-            if (!serviceEndpoints.ContainsKey(route))
+            if (!serviceEndpoints.ContainsKey(route) && !sessionServiceEndpoints.ContainsKey(route))
                 return BadRequest("Invalid service.");
+
             try
             {
                 var response = await httpClient.PostAsJsonAsync(serviceEndpoints[route], user);
