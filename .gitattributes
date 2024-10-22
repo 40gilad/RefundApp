@@ -1,1 +1,1 @@
-*.html linguist-hidden=true
+*.cs linguist-language=CSharp
