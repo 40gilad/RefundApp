@@ -1,0 +1,89 @@
+# Ignore Visual Studio specific files
+.vscode/
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Ignore build results
+bin/
+obj/
+out/
+publish/
+
+# Ignore .NET runtime and dependencies
+*.dll
+*.exe
+*.app
+*.ipa
+*.pdb
+*.dylib
+*.so
+*.class
+
+# Ignore configuration files
+appsettings*.json
+
+# Ignore Python-specific files
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+*.pyd
+*.whl
+
+# Ignore virtual environment folders
+venv/
+env/
+.venv/
+
+# Ignore Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+# Ignore PyCharm specific files
+.idea/
+*.iml
+
+# Ignore logs and database files
+*.log
+*.db
+*.sqlite3
+
+# Ignore Docker files
+docker-compose.override.yml
+.docker/
+
+# Ignore build output and package files
+*.csproj.user
+*.ps1
+*.sh
+project.lock.json
+project.fragment.lock.json
+
+# Ignore compiled Python files
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore temporary files and backups
+*.bak
+*.tmp
+*.swp
+*~
+
+# Ignore system files
+.DS_Store
+Thumbs.db
+
+# Ignore coverage reports
+coverage/
+*.coverage
+*.coveragexml
+htmlcov/
+.coverage*
+
+# Ignore node_modules (if using any JavaScript libraries)
+node_modules/
+
