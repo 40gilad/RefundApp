@@ -1,8 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Configuration; // Ensure this is included
+using Microsoft.IdentityModel.Tokens;
 using RefundApp.Models;
-using RefundApp.PsudoServices;
+using RefundApp.Utils;
+using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
+using System.Security.Claims;
+using System.Text;
 
 namespace RefundApp.Controllers
 {
@@ -11,7 +15,8 @@ namespace RefundApp.Controllers
     public class GatewayController : ControllerBase
     {
         private readonly ILogger<GatewayController> logger;
-        private readonly HttpClient httpClient;
+        private readonly IHttpClientFactory httpClientFactory;
+        private readonly string secretKey;
 
         private static Dictionary<string, string> serviceEndpoints = new()
         {
@@ -19,44 +24,59 @@ namespace RefundApp.Controllers
             { "login", "https://localhost:7017/Login" }
         };
 
-        private static Dictionary<string, string> sessionServiceEndpoints = new()
+        private static Dictionary<string, string> jwtRequiredServiceEndpoints = new()
         {
-            { "refund", "https://localhost:7017/Refund" },
-            { "a", "https://localhost:7017/Login" },
-            { "b", "https://localhost:7017/Login" }
+            { "add-refund", "https://localhost:7017/Refund" },
+            { "kaki", "https://localhost:7017/kaki" },
+            { "pipi", "https://localhost:7017/pipi" }
         };
 
-
-        public GatewayController(ILogger<GatewayController> _logger, HttpClient _httpClient)
+        public GatewayController(ILogger<GatewayController> _logger, IHttpClientFactory _httpClientFactory, IConfiguration configuration)
         {
             logger = _logger;
-            httpClient = _httpClient;
+            httpClientFactory = _httpClientFactory;
+            secretKey = configuration["Jwt:SecretKey"]; // Get the secret key from configuration
         }
 
         [HttpPost("ProcessRequest")]
-        public async Task<IActionResult> ProcessRequest(string route, [FromBody] UserModel user)
+        public async Task<IActionResult> ProcessRequest(string route, [FromBody] object payload, [FromHeader(Name = "Authorization")] string token)
         {
-            httpClient.DefaultRequestHeaders.Accept.Clear();
-            httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             logger.LogInformation("Processing request for route: {Route}", route);
-
-            if (user == null)
-            {
-                logger.LogWarning("Invalid user data.");
-                return BadRequest("Invalid user data.");
-            }
-
+            var serviceEndpoint = string.Empty;
             string lower_route = route.ToLowerInvariant();
 
-            if (!serviceEndpoints.ContainsKey(route) && !sessionServiceEndpoints.ContainsKey(route))
+            // Validate JWT only for the routes that require it
+            if (jwtRequiredServiceEndpoints.ContainsKey(route))
+            {
+                if (!JwtUtils.ValidateJwtToken(token, secretKey, out string userEmail))
+                {
+                    logger.LogWarning("Invalid JWT token.");
+                    return Unauthorized("Invalid token.");
+                }
+                serviceEndpoint = jwtRequiredServiceEndpoints[route];
+                logger.LogInformation("JWT token validated for user: {UserEmail}", userEmail);
+            }
+            else if (!serviceEndpoints.ContainsKey(route))
+            {
                 return BadRequest("Invalid service.");
+            }
+            else
+            {
+                serviceEndpoint = serviceEndpoints[route];
+            }
 
             try
             {
-                var response = await httpClient.PostAsJsonAsync(serviceEndpoints[route], user);
+                var httpClient = httpClientFactory.CreateClient();
+                httpClient.DefaultRequestHeaders.Accept.Clear();
+                httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                var response = await httpClient.PostAsJsonAsync(serviceEndpoint, payload);
 
                 if (response.IsSuccessStatusCode)
+                {
                     return Ok(await response.Content.ReadAsStringAsync());
+                }
 
                 logger.LogWarning("Error calling service for route: {Route}, StatusCode: {StatusCode}", lower_route, response.StatusCode);
                 return StatusCode((int)response.StatusCode, await response.Content.ReadAsStringAsync());
@@ -66,14 +86,6 @@ namespace RefundApp.Controllers
                 logger.LogError(ex, "Error calling service for route: {Route}", lower_route);
                 return StatusCode(500, ex.Message);
             }
-
-
-        }
-
-        private bool IsValidSession(string sessionId)
-        {
-            // Validate the session, e.g., check in a session store or database
-            return PsudoUserDbService.Instance().Get().Values.Any(user => user.SessionId == sessionId);
         }
     }
 }

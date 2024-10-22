@@ -16,6 +16,7 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true; //GDPR 
 });
 
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 

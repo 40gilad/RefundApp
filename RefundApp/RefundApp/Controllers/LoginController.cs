@@ -9,10 +9,12 @@ namespace RefundApp.Controllers
     public class LoginController : ControllerBase
     {
         private readonly ILogger<LoginController> logger;
+        private readonly string secretKey; // Add this field
 
-        public LoginController(ILogger<LoginController> _logger)
+        public LoginController(ILogger<LoginController> _logger, IConfiguration configuration)
         {
             logger = _logger;
+            secretKey = configuration["Jwt:SecretKey"];
         }
 
         [Route("Register")]
@@ -44,16 +46,10 @@ namespace RefundApp.Controllers
 
             try
             {
-                if(!UserAuth(user))
+                if (!UserAuth(user))
                     return BadRequest("Invalid password.");
 
-                string sessionId = Guid.NewGuid().ToString();
-                user.SessionId = sessionId;
-                PsudoUserDbService.Instance().Update(user);
-
-                HttpContext.Session.SetString("SessionId", sessionId);
-
-                return Ok(new { Message = "Login successful.", SessionId = sessionId });
+                return Ok(new { Message = "Login successful.", Token = JwtUtils.GenerateJwtToken(user.UEmail, secretKey) });
             }
             catch (KeyNotFoundException ex)
             {
@@ -81,23 +77,6 @@ namespace RefundApp.Controllers
             return Ok();
         }
 
-        [HttpDelete]
-        public IActionResult Delete([FromBody] UserModel user)
-        {
-            try
-            {
-                if (!UserAuth(user))
-                    return BadRequest("Invalid password.");
-                string uname=user.UName;
-                PsudoUserDbService.Instance().Remove(user.UEmail);
-                return Ok($"user {uname} removed successfuly");
-            }
-            catch (KeyNotFoundException ex)
-            {
-                logger.LogError(ex.Message);
-                return StatusCode(500, ex.Message);
-            }
-        }
 
         private bool UserAuth(UserModel user)
         {
