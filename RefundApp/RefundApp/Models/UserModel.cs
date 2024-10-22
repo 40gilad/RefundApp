@@ -15,11 +15,10 @@ namespace RefundApp.Models
         [Required]
         [DataType(DataType.Password)]
         public string UPassword { get; set; }
-        public string SessionId { get; set; }
 
         public UserModel() { }
 
-        public UserModel(string u_name, string e_mail, string u_password,string session_id="")
+        public UserModel(string u_name, string e_mail, string u_password)
         {
             if (string.IsNullOrWhiteSpace(u_password))
                 throw new ArgumentException("Password cannot be null or empty", nameof(u_password));
@@ -31,7 +30,6 @@ namespace RefundApp.Models
             UName = u_name;
             UEmail = e_mail;
             UPassword = u_password;
-            SessionId = session_id;
         }
 
         public UserModel(UserModel other)
@@ -42,7 +40,6 @@ namespace RefundApp.Models
             UName = other.UName;
             UEmail = other.UEmail;
             UPassword = other.UPassword;
-            SessionId = other.SessionId;
         }
 
         public UserModel(Dictionary<string, string> data)
@@ -57,8 +54,6 @@ namespace RefundApp.Models
             UName = data["userName"];
             UEmail = data["email"];
             UPassword = data["password"];
-            if (data.ContainsKey("session"))
-                SessionId = data["session"];
         }
 
         
