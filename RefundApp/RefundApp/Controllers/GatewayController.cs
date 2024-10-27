@@ -5,6 +5,7 @@ using RefundApp.Models;
 using RefundApp.Utils;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text;
 
@@ -27,7 +28,7 @@ namespace RefundApp.Controllers
         private static Dictionary<string, string> jwtRequiredServiceEndpoints = new()
         {
             { "add-refund", "https://localhost:7017/Refund" },
-            { "kaki", "https://localhost:7017/kaki" },
+            { "jsons-compare", "http://localhost:5000/compare" },
             { "pipi", "https://localhost:7017/pipi" }
         };
 
@@ -41,6 +42,24 @@ namespace RefundApp.Controllers
         [HttpPost("ProcessRequest")]
         public async Task<IActionResult> ProcessRequest(string route, [FromBody] object payload, [FromHeader(Name = "Authorization")] string token)
         {
+
+            /**** test endpoiint ******/
+
+            var kaki_httpClient = httpClientFactory.CreateClient();
+            kaki_httpClient.DefaultRequestHeaders.Accept.Clear();
+            kaki_httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+            var kaki_response = await kaki_httpClient.PostAsJsonAsync(jwtRequiredServiceEndpoints[route], payload);
+
+            if (kaki_response.IsSuccessStatusCode)
+            {
+                return Ok(await kaki_response.Content.ReadAsStringAsync());
+            }
+            logger.LogWarning("Error calling service for route: {Route}, StatusCode: {StatusCode}", route, kaki_response.StatusCode);
+            return StatusCode((int)kaki_response.StatusCode, await kaki_response.Content.ReadAsStringAsync());
+
+            /**************************/
+
             logger.LogInformation("Processing request for route: {Route}", route);
             var serviceEndpoint = string.Empty;
             string lower_route = route.ToLowerInvariant();
@@ -67,6 +86,7 @@ namespace RefundApp.Controllers
 
             try
             {
+
                 var httpClient = httpClientFactory.CreateClient();
                 httpClient.DefaultRequestHeaders.Accept.Clear();
                 httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
