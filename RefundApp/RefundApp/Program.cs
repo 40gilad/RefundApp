@@ -6,20 +6,28 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddHttpClient<GatewayController>();
 
+// Add CORS services
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAllOrigins", builder =>
+    {
+        builder.AllowAnyOrigin()   // Allows any origin
+               .AllowAnyMethod()   // Allows any HTTP method (GET, POST, etc.)
+               .AllowAnyHeader();  // Allows any header
+    });
+});
 
 // Add session support
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
-    options.IdleTimeout = TimeSpan.FromMinutes(600); //10 hours session
+    options.IdleTimeout = TimeSpan.FromMinutes(600); // 10 hours session
     options.Cookie.HttpOnly = true; // cannot read cookie with javascript
-    options.Cookie.IsEssential = true; //GDPR 
+    options.Cookie.IsEssential = true; // GDPR 
 });
-
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
 
 var app = builder.Build();
 
@@ -31,6 +39,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// Use CORS middleware before any other middleware that handles requests
+app.UseCors("AllowAllOrigins"); // Use the CORS policy defined above
 
 // Add session middleware before UseAuthorization
 app.UseSession();
