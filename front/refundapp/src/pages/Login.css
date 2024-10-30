@@ -1,0 +1,24 @@
+/* src/pages/Login.css */
+div {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 1em;
+    text-align: center;
+  }
+  
+  label {
+    display: block;
+    margin-top: 1em;
+  }
+  
+  input {
+    width: 100%;
+    padding: 0.5em;
+    margin-top: 0.5em;
+  }
+  
+  button {
+    margin-top: 1em;
+    padding: 0.5em 1em;
+  }
+  
