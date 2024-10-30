@@ -1,2 +1,2 @@
-*.html linguist-hidden=true
+*.html linguist-detectable=false
 *.css linguist-hidden=true
