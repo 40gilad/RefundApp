@@ -9,27 +9,28 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState(''); // New state for success message
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   
+  const navigate = useNavigate();
+
   const handleToggle = () => {
     setIsRegister(!isRegister);
     setError('');
   };
 
-  const navigate = useNavigate();
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     const url = `https://localhost:7017/Gateway/ProcessRequest?route=${isRegister ? 'register' : 'login'}`;
-    
+  
     // Extract the username from the email
     const username = email.split('@')[0]; // Get the part before the '@'
-    
+  
     const data = {
-      uName: username,      // Use the extracted username
-      uEmail: isRegister ? email : '',
+      uName: username,
+      uEmail: email,  // Always include email
       uPassword: password,
       sessionId: 0,
     };
@@ -43,14 +44,20 @@ const Login = () => {
       });
   
       if (response.status === 200) {
-        // Navigate to the login page after registration
         if (isRegister) {
-          setIsRegister(false); // Reset to login mode
-          setEmail('');        // Clear email field
-          setPassword('');     // Clear password field
+          setSuccessMessage('Registration successful! Redirecting to login...');
+          setTimeout(() => {
+            setIsRegister(false); // Reset to login mode
+            setSuccessMessage('');
+            setEmail('');        // Clear email field
+            setPassword('');     // Clear password field
+          }, 2000); // Delay for 2 seconds
+        } else {
+          const token = response.data.Token;
+          localStorage.setItem('authToken', token);
+          navigate('/main');
         }
-        handleToggle();
-          }
+      }
     } catch (error) {
       if (error.response && error.response.data && error.response.data.message) {
         setError(error.response.data.message);
@@ -62,10 +69,18 @@ const Login = () => {
       setLoading(false);
     }
   };
+  
 
   return (
     <div>
       <h2>{isRegister ? 'Register' : 'Login'}</h2>
+      
+      {/* Display success message */}
+      {successMessage && <p style={{ color: 'green' }}>{successMessage}</p>}
+      
+      {/* Display error message */}
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+      
       <form onSubmit={handleSubmit}>
         <div>
           <label>Email:</label>
@@ -90,11 +105,11 @@ const Login = () => {
             {showPassword ? 'Hide' : 'Show'}
           </button>
         </div>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
         <button type="submit" disabled={loading}>
           {loading ? 'Loading...' : isRegister ? 'Register' : 'Login'}
         </button>
       </form>
+      
       <button onClick={handleToggle}>
         {isRegister ? 'Already have an account? Login' : 'Need an account? Register'}
       </button>

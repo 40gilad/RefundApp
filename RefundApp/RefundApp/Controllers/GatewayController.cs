@@ -89,3 +89,8 @@ namespace RefundApp.Controllers
         }
     }
 }
+
+
+/*
+ site: ValueKind = Object : "{"uName":"pipi","uEmail":"","uPassword":"123","sessionId":0}"
+ */
