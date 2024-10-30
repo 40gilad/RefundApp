@@ -6,6 +6,7 @@ app = Flask(__name__)
 
 def compare_refunds(wolt_data, restaurant_data):
     # Create dictionaries for easy lookup by order ID
+    print(f"WOLT:\n{wolt_data}\n----------------------------------\nRESTURANT:\n{restaurant_data}")
     wolt_refunds = {order['order_id']: order['refund_amount'] for order in wolt_data}
     restaurant_refunds = {order['order_id']: order['refund_amount'] for order in restaurant_data}
 
