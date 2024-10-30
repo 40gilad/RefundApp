@@ -3,13 +3,16 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './Login.css';
+import LoginForm from '../components/Login/LoginForm';
+import ToggleButton from '../components/Login/ToggleButton';
+import MessageDisplay from '../components/Login/MessageDisplay';
 
 const Login = () => {
   const [isRegister, setIsRegister] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [successMessage, setSuccessMessage] = useState(''); // New state for success message
+  const [successMessage, setSuccessMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   
@@ -24,13 +27,11 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
     const url = `https://localhost:7017/Gateway/ProcessRequest?route=${isRegister ? 'register' : 'login'}`;
-  
-    // Extract the username from the email
-    const username = email.split('@')[0]; // Get the part before the '@'
-  
+    const username = email.split('@')[0];
+
     const data = {
       uName: username,
-      uEmail: email,  // Always include email
+      uEmail: email,
       uPassword: password,
       sessionId: 0,
     };
@@ -42,16 +43,16 @@ const Login = () => {
           'Content-Type': 'application/json',
         },
       });
-  
+
       if (response.status === 200) {
         if (isRegister) {
           setSuccessMessage('Registration successful! Redirecting to login...');
           setTimeout(() => {
-            setIsRegister(false); // Reset to login mode
+            setIsRegister(false);
             setSuccessMessage('');
-            setEmail('');        // Clear email field
-            setPassword('');     // Clear password field
-          }, 2000); // Delay for 2 seconds
+            setEmail('');
+            setPassword('');
+          }, 2000);
         } else {
           const token = response.data.Token;
           localStorage.setItem('authToken', token);
@@ -69,50 +70,22 @@ const Login = () => {
       setLoading(false);
     }
   };
-  
 
   return (
     <div>
       <h2>{isRegister ? 'Register' : 'Login'}</h2>
-      
-      {/* Display success message */}
-      {successMessage && <p style={{ color: 'green' }}>{successMessage}</p>}
-      
-      {/* Display error message */}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Email:</label>
-          <input
-            type="text"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            aria-label="Email"
-          />
-        </div>
-        <div>
-          <label>Password:</label>
-          <input
-            type={showPassword ? 'text' : 'password'}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            aria-label="Password"
-          />
-          <button type="button" onClick={() => setShowPassword(!showPassword)}>
-            {showPassword ? 'Hide' : 'Show'}
-          </button>
-        </div>
-        <button type="submit" disabled={loading}>
-          {loading ? 'Loading...' : isRegister ? 'Register' : 'Login'}
-        </button>
-      </form>
-      
-      <button onClick={handleToggle}>
-        {isRegister ? 'Already have an account? Login' : 'Need an account? Register'}
-      </button>
+      <MessageDisplay successMessage={successMessage} error={error} />
+      <LoginForm 
+        email={email}
+        setEmail={setEmail}
+        password={password}
+        setPassword={setPassword}
+        showPassword={showPassword}
+        setShowPassword={setShowPassword}
+        handleSubmit={handleSubmit}
+        loading={loading}
+      />
+      <ToggleButton isRegister={isRegister} handleToggle={handleToggle} />
     </div>
   );
 };
