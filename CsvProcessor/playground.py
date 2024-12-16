@@ -39,12 +39,12 @@ def extract_text_from_pdf_from_sentence(pdf_file, start_sentence, to_end_of_file
     return ""  # Return empty string if the word is not found
 
 
-def extract_text_till_sentence(text, end_sentence='מ %"עמ מ"עמ מ״עמ אללמ״עמ ללוכהנמזה רפסמ םייוכינ'):
+def extract_text_till_sentence(text, end_sentence):
     start_indx = text.find(end_sentence)
     return text[:start_indx] if start_indx != -1 else ""
 
 
-def extract_text_from_sentence(text, end_sentence='מ %"עמ מ"עמ מ״עמ אללמ״עמ ללוכהנמזה רפסמ םייוכינ'):
+def extract_text_from_sentence(text, end_sentence):
     start_indx = text.find(end_sentence)
     return text[start_indx:] if start_indx != -1 else ""
 
@@ -72,29 +72,43 @@ def dictify_relevant_data_from_record(text):
         amount = curr_line[1]
         if amount[0] == "-":
             amount = amount[1:]
-        ret_list.append({"order_id": curr_line[0], "amount": amount})
+        ret_list.append({"order_id": curr_line[4], "amount": amount})
     return ret_list
 
 
-def extract_json_from_last_page(file_path, sentence='מ"עמ ילב מ״עמ ללוכ הנמזה רפסמ תופסות'):
-    """
-    Extracts tables from the last page of the PDF, starting from a specific sentence.
+def dictify_wolt_to_rest(text):
+    extract_text_till_sentence(text, )
 
-    :param file_path: Path to the PDF file.
-    """
+
+def dictify_rest_to_wolt(text):
+    pass
+
+
+def extract_json_from_last_page(file_path):
+
+    key_sentences = {
+        "wolt_to_rest_beggining": 'מ"עמ ילב מ״עמ ללוכ הנמזה רפסמ תופסות',
+        "rest_to_wolt_beginning": 'מ %"עמ מ"עמ מ״עמ אללמ״עמ ללוכהנמזה רפסמ םייוכינ',
+        "extra_commisions": '% מ"עמ מ"עמ מ״עמ אלל מ"עמ םע הנמזה רפסמ תופסונ תולמע'
+    }
 
     with pdfplumber.open(file_path):
-        text = extract_text_from_pdf_from_sentence(file_path, sentence)
+        relevant_text = extract_text_from_pdf_from_sentence(file_path, key_sentences["wolt_to_rest_beggining"])
 
-        if not text:
+        if not relevant_text:
             raise ValueError("The specified text was not found in the PDF.")
 
-        gifts = extract_text_till_sentence(text)
-        dictify_relevant_data_from_record(gifts)
-        print("#############################")
-        print_reverse(extract_text_from_sentence(text))
-        kaki = 1
+    ret_dict = dict().fromkeys(["wolt_to_rest", "rest_to_wolt"])
+
+    wolt_to_rest = extract_text_till_sentence(relevant_text, key_sentences["rest_to_wolt_beginning"])
+    rest_to_wolt = extract_text_till_sentence(
+        extract_text_from_sentence(relevant_text, key_sentences["rest_to_wolt_beginning"]),
+        key_sentences["extra_commisions"])
+
+    ret_dict["wolt_to_rest"] = dictify_relevant_data_from_record(wolt_to_rest)
+    ret_dict["rest_to_wolt"] = dictify_relevant_data_from_record(rest_to_wolt)
+    return ret_dict
 
 
 # Example usage
-res = extract_json_from_last_page("example.pdf")
+print(extract_json_from_last_page("example.pdf"))
