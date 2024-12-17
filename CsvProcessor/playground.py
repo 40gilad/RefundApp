@@ -84,8 +84,7 @@ def dictify_rest_to_wolt(text):
     pass
 
 
-def extract_json_from_last_page(file_path):
-
+def extract_json_pdf(file_path):
     key_sentences = {
         "wolt_to_rest_beggining": 'מ"עמ ילב מ״עמ ללוכ הנמזה רפסמ תופסות',
         "rest_to_wolt_beginning": 'מ %"עמ מ"עמ מ״עמ אללמ״עמ ללוכהנמזה רפסמ םייוכינ',
@@ -111,4 +110,6 @@ def extract_json_from_last_page(file_path):
 
 
 # Example usage
-print(extract_json_from_last_page("example.pdf"))
+import json
+
+print(json.dumps(extract_json_pdf("example.pdf"), indent=4))
