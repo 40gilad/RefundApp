@@ -5,7 +5,7 @@
 ![Architecture Image](Arc/arc.drawio.png)
 
 ### Development Setup
-To enable HTTPS for development:
+To enable HTTPS for **development only(!)**:
 1. Run the following command in the project directory:
    ```bash
    openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 365 -nodes
