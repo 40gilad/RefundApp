@@ -1,13 +1,13 @@
 # JSON Refund Comparison Tool
 
 ## Overview
-This project provides a tool to compare refund data from delivery app and restaurant JSON files. It identifies discrepancies in refund amounts and generates a new JSON file containing the results.
+This project provides a tool to compare refund data from WOLT and restaurant JSON files. It identifies discrepancies in refund amounts and generates a new JSON file containing the results.
 
 ## Features
 - Compare two JSON files based on order IDs and refund amounts.
 - Generate a new JSON file with:
-  - Refund mismatches between delivery company and restaurant data.
-  - Records that are present in delivery company but missing in the restaurant data.
+  - Refund mismatches between WOLT and restaurant data.
+  - Records that are present in WOLT but missing in the restaurant data.
 
 ## Getting Started
 
