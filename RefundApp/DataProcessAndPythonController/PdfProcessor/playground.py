@@ -40,6 +40,9 @@ def extract_text_from_pdf_from_sentence(pdf_file, start_sentence, to_end_of_file
 
 def extract_text_till_sentence(text, end_sentence):
     start_indx = text.find(end_sentence)
+    if start_indx == -1:
+        end_sentence = 'מ %"עמ מ"עמ מ״עמ אלל מ״עמ ללוכהנמזה רפסמ םייוכינ'
+        start_indx = text.find(end_sentence)
     return text[:start_indx] if start_indx != -1 else ""
 
 
@@ -145,4 +148,4 @@ def extract_json_pdf(file_path):
 # Example usage
 import json
 
-print(json.dumps(extract_json_pdf("example pdfs/example.pdf"), indent=4))
+print(json.dumps(extract_json_pdf("example pdfs/example3.pdf"), indent=4))

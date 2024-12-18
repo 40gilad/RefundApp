@@ -1,5 +1,6 @@
 import pdfplumber
 
+
 def extract_text_from_pdf_from_sentence(pdf_file, start_sentence, to_end_of_file=True, search_reverse=True):
     """
     Extract text from a PDF starting from the specified word.
@@ -21,12 +22,21 @@ def extract_text_from_pdf_from_sentence(pdf_file, start_sentence, to_end_of_file
             page = pdf.pages[page_num]
             text = page.extract_text()
 
-            if text and start_sentence in text:
-                # Find the starting position of the word in the text
-                start_index = text.index(start_sentence)
+            if text and start_sentence in text:  # found the page that has the start_sentence
+
+                for i in range(page_num - 1, -1, -1):  # check that page before dosent have it as well
+                    temp_page = pdf.pages[i]
+                    temp_text = temp_page.extract_text()
+                    if temp_text:
+                        if start_sentence not in temp_text:
+                            start_index = text.index(start_sentence)
+                            break
+                        else:
+                            text = temp_text
+                            page_num = i
+
 
                 if to_end_of_file:
-                    # Extract text from the current position to the end of the file
                     extracted_text = text[start_index:] + "\n".join(
                         pdf.pages[i].extract_text() for i in range(page_num + 1, len(pdf.pages)))
                 else:
@@ -39,18 +49,26 @@ def extract_text_from_pdf_from_sentence(pdf_file, start_sentence, to_end_of_file
 
 
 def extract_text_till_sentence(text, end_sentence):
-    start_indx = text.find(end_sentence)
+    start_indx = -1
+    for sentence in end_sentence:
+        start_indx = text.find(sentence)
+        if start_indx != -1:
+            break
     return text[:start_indx] if start_indx != -1 else ""
 
 
 def extract_text_from_sentence(text, end_sentence):
-    start_indx = text.find(end_sentence)
+    start_indx = -1
+    for sentence in end_sentence:
+        start_indx = text.find(sentence)
+        if start_indx != -1:
+            break
     return text[start_indx:] if start_indx != -1 else ""
 
-def txt_from_pdf(file_path,start_sentence):
 
+def txt_from_pdf(file_path, start_sentence):
     with pdfplumber.open(file_path):
-        relevant_text = extract_text_from_pdf_from_sentence(file_path, key_sentences["wolt_to_rest_beggining"])
+        relevant_text = extract_text_from_pdf_from_sentence(file_path, start_sentence)
 
         if not relevant_text:
             raise ValueError("The specified text was not found in the PDF.")

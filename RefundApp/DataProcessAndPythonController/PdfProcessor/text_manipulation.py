@@ -43,7 +43,7 @@ def get_customer_index(record):
                 # not sure
                 kaki = 1
             except ValueError:
-                return None
+                raise ValueError(f"no customer found in record \n" + str(record))
     return {'customer_index': customer_index, 'is_hebrew': is_hebrew}
 
 
@@ -60,9 +60,12 @@ def dictify_relevant_data_from_record(text):
     listed = listify_each_record(text)
     for l in listed:
         curr_line = l.split(" ")
-        amount = curr_line[1]
-        if amount[0] == "-":
-            amount = amount[1:]
-        customer_name = get_customer_name(curr_line)
-        ret_list.append({"order_id": curr_line[4],"customer":customer_name, "amount": amount})
+        try:
+            amount = curr_line[3]
+            if amount[0] == "-":
+                amount = amount[1:]
+            customer_name = get_customer_name(curr_line)
+            ret_list.append({"order_id": curr_line[4],"customer":customer_name, "amount": amount})
+        except IndexError:
+            continue
     return ret_list
