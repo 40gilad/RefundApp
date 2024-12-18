@@ -1,6 +1,5 @@
 import pdfplumber
 
-
 def extract_text_from_pdf_from_sentence(pdf_file, start_sentence, to_end_of_file=True, search_reverse=True):
     """
     Extract text from a PDF starting from the specified word.
@@ -146,4 +145,4 @@ def extract_json_pdf(file_path):
 # Example usage
 import json
 
-print(json.dumps(extract_json_pdf("example.pdf"), indent=4))
+print(json.dumps(extract_json_pdf("example pdfs/example.pdf"), indent=4))
