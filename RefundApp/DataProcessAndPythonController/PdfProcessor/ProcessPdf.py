@@ -35,17 +35,25 @@ def extract_json_pdf(file_path):
 if __name__ == "__main__":
     # Example usage
     import json
-    print(f"\n################################# EXAMPLE1 #########################################")
-    print(json.dumps(extract_json_pdf("example pdfs/example1.pdf"), indent=4))
+    # print(f"\n################################# EXAMPLE1 #########################################")
+    # print(json.dumps(extract_json_pdf("example pdfs/example1.pdf"), indent=4))
+    #
+    # print("################################# EXAMPLE2 #########################################")
+    # print(json.dumps(extract_json_pdf("example pdfs/example2.pdf"), indent=4))
+    #
+    # print("################################# EXAMPLE3 #########################################")
+    # print(json.dumps(extract_json_pdf("example pdfs/example3.pdf"), indent=4))
+    #
+    # print("################################# EXAMPLE4 #########################################")
+    # print(json.dumps(extract_json_pdf("example pdfs/example4.pdf"), indent=4))
+    #
+    # print("################################# EXAMPLE5 #########################################")
+    # print(json.dumps(extract_json_pdf("example pdfs/example5.pdf"), indent=4))
 
-    print("################################# EXAMPLE2 #########################################")
-    print(json.dumps(extract_json_pdf("example pdfs/example2.pdf"), indent=4))
 
-    print("################################# EXAMPLE3 #########################################")
-    print(json.dumps(extract_json_pdf("example pdfs/example3.pdf"), indent=4))
+    # print("################################# EXAMPLE6 #########################################")
+    # print(json.dumps(extract_json_pdf("example pdfs/example6.pdf"), indent=4))
 
-    print("################################# EXAMPLE4 #########################################")
-    print(json.dumps(extract_json_pdf("example pdfs/example4.pdf"), indent=4))
-
-    print("################################# EXAMPLE5 #########################################")
-    print(json.dumps(extract_json_pdf("example pdfs/example5.pdf"), indent=4))
+    # Todo: fix bug in example7
+    print("################################# EXAMPLE7 #########################################")
+    print(json.dumps(extract_json_pdf("example pdfs/example7.pdf"), indent=4))
