@@ -43,6 +43,7 @@ const Login = () => {
           'Content-Type': 'application/json',
         },
       });
+      console.log(response);
 
       if (response.status === 200) {
         if (isRegister) {
@@ -54,7 +55,8 @@ const Login = () => {
             setPassword('');
           }, 2000);
         } else {
-          const token = response.data.Token;
+          const token = response.data.token;
+          console.log("Received token:", token);
           localStorage.setItem('authToken', token);
           navigate('/main');
         }
