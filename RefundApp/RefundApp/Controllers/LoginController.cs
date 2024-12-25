@@ -48,8 +48,8 @@ namespace RefundApp.Controllers
             {
                 if (!UserAuth(user))
                     return BadRequest("Invalid password.");
-
-                return Ok(new { Message = "Login successful.", Token = JwtUtils.GenerateJwtToken(user.UEmail, secretKey) });
+                string Token = JwtUtils.GenerateJwtToken(user.UEmail, secretKey);
+                return Ok(new { Message = "Login successful.", Token = Token });
             }
             catch (KeyNotFoundException ex)
             {

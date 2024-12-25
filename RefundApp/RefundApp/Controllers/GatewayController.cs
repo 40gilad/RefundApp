@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration; // Ensure this is included
-using Microsoft.IdentityModel.Tokens;
 using RefundApp.Models;
 using RefundApp.Utils;
-using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Security.Claims;
@@ -28,7 +26,7 @@ namespace RefundApp.Controllers
         private static Dictionary<string, string> jwtRequiredServiceEndpoints = new()
         {
             { "add-refund", "https://localhost:7017/Refund" },
-            { "jsons-compare", "http://localhost:5000/compare" },
+            { "jsons-compare", "https://localhost:5000/compare" },
             { "pipi", "https://localhost:7017/pipi" }
         };
 
@@ -42,31 +40,13 @@ namespace RefundApp.Controllers
         [HttpPost("ProcessRequest")]
         public async Task<IActionResult> ProcessRequest(string route, [FromBody] object payload, [FromHeader(Name = "Authorization")] string token)
         {
-
-            /**** test endpoiint ******/
-
-            var kaki_httpClient = httpClientFactory.CreateClient();
-            kaki_httpClient.DefaultRequestHeaders.Accept.Clear();
-            kaki_httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
-            var kaki_response = await kaki_httpClient.PostAsJsonAsync(jwtRequiredServiceEndpoints[route], payload);
-
-            if (kaki_response.IsSuccessStatusCode)
-            {
-                return Ok(await kaki_response.Content.ReadAsStringAsync());
-            }
-            logger.LogWarning("Error calling service for route: {Route}, StatusCode: {StatusCode}", route, kaki_response.StatusCode);
-            return StatusCode((int)kaki_response.StatusCode, await kaki_response.Content.ReadAsStringAsync());
-
-            /**************************/
-
             logger.LogInformation("Processing request for route: {Route}", route);
             var serviceEndpoint = string.Empty;
             string lower_route = route.ToLowerInvariant();
 
             // Validate JWT only for the routes that require it
             if (jwtRequiredServiceEndpoints.ContainsKey(route))
-            {
+            { 
                 if (!JwtUtils.ValidateJwtToken(token, secretKey, out string userEmail))
                 {
                     logger.LogWarning("Invalid JWT token.");
@@ -111,6 +91,30 @@ namespace RefundApp.Controllers
 }
 
 
+/**** test endpoiint ******/
+//was in the beggining of the processrequest function
+
+//var kaki_httpClient = httpClientFactory.CreateClient();
+//kaki_httpClient.DefaultRequestHeaders.Accept.Clear();
+//kaki_httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+//var kaki_response = await kaki_httpClient.PostAsJsonAsync(jwtRequiredServiceEndpoints[route], payload);
+
+//if (kaki_response.IsSuccessStatusCode)
+//{
+//    return Ok(await kaki_response.Content.ReadAsStringAsync());
+//}
+//logger.LogWarning("Error calling service for route: {Route}, StatusCode: {StatusCode}", route, kaki_response.StatusCode);
+//return StatusCode((int)kaki_response.StatusCode, await kaki_response.Content.ReadAsStringAsync());
+
+/**************************/
+
 /*
  site: ValueKind = Object : "{"uName":"pipi","uEmail":"","uPassword":"123","sessionId":0}"
  */
+
+
+// ValueKind = Object : "{  "uEmail": "string",  "orderId": "string",  "customerName": "string",  "refundDate": "2024-12-25T10:14:26.601Z",  "amount": 0,  "reason": "string",  "isResturantFault": true}"
+// ValueKind = Object : "{"uEmail":"a@b.com","orderId":"123","customerName":"aa b","refundDate":"2024-12-25","amount":"11","reason":"asdasd","errorSource":"restaurant"}"
+// path to example pdf files: 
+// C:\Users\40gil\Desktop\not_work\my_scipts\RefundApp\RefundApp\DataProcessAndPythonController\PdfProcessor\example pdfs
