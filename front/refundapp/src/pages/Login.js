@@ -58,6 +58,7 @@ const Login = () => {
           const token = response.data.token;
           console.log("Received token:", token);
           localStorage.setItem('authToken', token);
+          localStorage.setItem('userEmail', email);
           navigate('/main');
         }
       }

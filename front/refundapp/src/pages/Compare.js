@@ -10,22 +10,10 @@ const Compare = () => {
       orderId: '',
       amount: '',
       errorSource: 'restaurant', // 'restaurant' or 'wolt'
+      processed: false, // Added to track if the row has been processed
+      reason: '', // Added reason field
     },
   ]);
-
-  const handleAddRow = () => {
-    setRows([
-      ...rows,
-      {
-        date: new Date().toISOString().slice(0, 10),
-        firstName: '',
-        lastInitial: '',
-        orderId: '',
-        amount: '',
-        errorSource: 'restaurant',
-      },
-    ]);
-  };
 
   const handleChange = (index, field, value) => {
     const updatedRows = rows.map((row, i) =>
@@ -46,9 +34,9 @@ const Compare = () => {
     setRows(updatedRows);
   };
 
-  const handleApply = async () => {
-    // Retrieve the stored auth token
+  const handleOkClick = async (index) => {
     const authToken = localStorage.getItem('authToken');
+    const uEmail = localStorage.getItem('userEmail');
     
     if (!authToken) {
       alert('Authorization token is missing');
@@ -56,19 +44,20 @@ const Compare = () => {
     }
 
     // Prepare the data to be sent
-    const data = rows.map(row => ({
-      date: row.date,
-      firstName: row.firstName,
-      lastInitial: row.lastInitial,
-      orderId: row.orderId,
-      amount: row.amount,
-      errorSource: row.errorSource,
-    }));
+    const data = {
+      uEmail: uEmail,
+      orderId: rows[index].orderId,
+      customerName: `${rows[index].firstName} ${rows[index].lastInitial}`,
+      refundDate: rows[index].date,
+      amount: rows[index].amount,
+      reason: rows[index].reason, // Added reason to the sent data
+      isResturantFault: rows[index].errorSource === "resturant",
+    };
 
     try {
       const response = await axios.post(
-        'https://localhost:7017/Gateway/ProcessRequest?route=jsons-compare',
-        { data },
+        'https://localhost:7017/Gateway/ProcessRequest?route=add-refund',
+        data,  // Send the data directly, without wrapping it in an array
         {
           headers: {
             Authorization: `Bearer ${authToken}`,
@@ -85,6 +74,26 @@ const Compare = () => {
       console.error('Error submitting data:', error);
       alert('Failed to submit data');
     }
+
+    // Mark the row as processed
+    const updatedRows = rows.map((row, i) =>
+      i === index ? { ...row, processed: true } : row
+    );
+    setRows(updatedRows);
+
+    // Add a new row after sending the current row
+    const newRow = {
+      date: new Date().toISOString().slice(0, 10),
+      firstName: '',
+      lastInitial: '',
+      orderId: '',
+      amount: '',
+      errorSource: 'restaurant',
+      processed: false, // New row is not processed
+      reason: '', // New row has empty reason
+    };
+
+    setRows([...updatedRows, newRow]);
   };
 
   return (
@@ -116,6 +125,8 @@ const Compare = () => {
             <th>מס' הזמנה</th>
             <th>סכום</th>
             <th>טעות שלנו / של וולט</th>
+            <th>סיבה</th> {/* Added column for reason */}
+            <th>אישור</th>
           </tr>
         </thead>
         <tbody>
@@ -176,29 +187,34 @@ const Compare = () => {
                   {row.errorSource === 'restaurant' ? 'טעות שלנו' : 'טעות של וולט'}
                 </button>
               </td>
+              <td>
+                <input
+                  type="text"
+                  value={row.reason}
+                  placeholder="סיבה"
+                  onChange={(e) => handleChange(index, 'reason', e.target.value)} // Handle reason changes
+                />
+              </td>
+              <td>
+                {!row.processed && (
+                  <button
+                    onClick={() => handleOkClick(index)}
+                    style={{
+                      backgroundColor: 'blue',
+                      color: 'white',
+                      border: 'none',
+                      padding: '5px 10px',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    OK
+                  </button>
+                )}
+              </td>
             </tr>
           ))}
         </tbody>
       </table>
-      <button
-        onClick={handleAddRow}
-        style={{ marginTop: '10px', padding: '10px 20px' }}
-      >
-        Add Row
-      </button>
-      <button
-        onClick={handleApply}
-        style={{
-          marginTop: '20px',
-          padding: '10px 20px',
-          backgroundColor: 'blue',
-          color: 'white',
-          border: 'none',
-          cursor: 'pointer',
-        }}
-      >
-        Apply
-      </button>
     </div>
   );
 };
