@@ -115,6 +115,6 @@ namespace RefundApp.Controllers
 
 
 // ValueKind = Object : "{  "uEmail": "string",  "orderId": "string",  "customerName": "string",  "refundDate": "2024-12-25T10:14:26.601Z",  "amount": 0,  "reason": "string",  "isResturantFault": true}"
-// ValueKind = Object : "{"uEmail":"a@b.com","orderId":"123","customerName":"aa b","refundDate":"2024-12-25","amount":"11","reason":"asdasd","errorSource":"restaurant"}"
+// ValueKind = Object : "{"uEmail":"a@b.com","orderId":"123","customerName":"aa b","refundDate":"2024-12-25","amount":"11","reason":"asd","errorSource":false}"
 // path to example pdf files: 
 // C:\Users\40gil\Desktop\not_work\my_scipts\RefundApp\RefundApp\DataProcessAndPythonController\PdfProcessor\example pdfs
