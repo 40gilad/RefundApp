@@ -43,6 +43,7 @@ const Compare = () => {
       return;
     }
 
+    console.log(rows[index].errorSource)
     // Prepare the data to be sent
     const data = {
       uEmail: uEmail,
@@ -51,7 +52,7 @@ const Compare = () => {
       refundDate: rows[index].date,
       amount: rows[index].amount,
       reason: rows[index].reason, // Added reason to the sent data
-      isResturantFault: rows[index].errorSource === "resturant",
+      isResturantFault: rows[index].errorSource === "restaurant",
     };
 
     try {
