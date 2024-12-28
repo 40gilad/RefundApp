@@ -1,4 +1,9 @@
 from flask import Flask, request, jsonify
+import os
+import sys
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+import PdfProcessor.ProcessPdf as ProcessPdf
 import json
 
 app = Flask(__name__)
@@ -30,8 +35,10 @@ def compare_refunds(wolt_data, restaurant_data):
 
 @app.route('/compare', methods=['POST'])
 def compare():
-    wolt_data = request.json.get('wolt_data')
-    restaurant_data = request.json.get('restaurant_data')
+    file = request.files['file']
+    resturan_raw_json = request.form.get('restaurant_data')
+    restaurant_data = json.loads(resturan_raw_json)
+    wolt_data = ProcessPdf.extract_json_pdf(file)
     discrepancies = compare_refunds(wolt_data, restaurant_data)
     return jsonify(discrepancies)
 
