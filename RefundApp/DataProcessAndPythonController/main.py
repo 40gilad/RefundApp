@@ -36,4 +36,7 @@ def compare():
     return jsonify(discrepancies)
 
 if __name__ == '__main__':
-    app.run(ssl_context=('cert.pem', 'key.pem'))
+    app.run(ssl_context=('C:/Users/40gil/Desktop/not_work/my_scipts/RefundApp/pems/cert.pem',
+                         'C:/Users/40gil/Desktop/not_work/my_scipts/RefundApp/pems/key.pem'))
+
+
