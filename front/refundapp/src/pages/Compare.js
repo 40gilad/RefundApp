@@ -4,16 +4,18 @@ import axios from 'axios';
 const Compare = () => {
   const [rows, setRows] = useState([
     {
-      date: new Date().toISOString().slice(0, 10), // Today's date in YYYY-MM-DD format
+      date: new Date().toISOString().slice(0, 10),
       firstName: '',
       lastInitial: '',
       orderId: '',
       amount: '',
-      errorSource: 'restaurant', // 'restaurant' or 'wolt'
-      processed: false, // Added to track if the row has been processed
-      reason: '', // Added reason field
+      errorSource: 'restaurant',
+      processed: false,
+      reason: '',
     },
   ]);
+  const [showFileUpload, setShowFileUpload] = useState(false);
+  const [file, setFile] = useState(null);
 
   const handleChange = (index, field, value) => {
     const updatedRows = rows.map((row, i) =>
@@ -37,28 +39,26 @@ const Compare = () => {
   const handleOkClick = async (index) => {
     const authToken = localStorage.getItem('authToken');
     const uEmail = localStorage.getItem('userEmail');
-    
+
     if (!authToken) {
       alert('Authorization token is missing');
       return;
     }
 
-    console.log(rows[index].errorSource)
-    // Prepare the data to be sent
     const data = {
       uEmail: uEmail,
       orderId: rows[index].orderId,
       customerName: `${rows[index].firstName} ${rows[index].lastInitial}`,
       refundDate: rows[index].date,
       amount: rows[index].amount,
-      reason: rows[index].reason, // Added reason to the sent data
-      isResturantFault: rows[index].errorSource === "restaurant",
+      reason: rows[index].reason,
+      isResturantFault: rows[index].errorSource === 'restaurant',
     };
 
     try {
       const response = await axios.post(
         'https://localhost:7017/Gateway/ProcessRequest?route=add-refund',
-        data,  // Send the data directly, without wrapping it in an array
+        data,
         {
           headers: {
             Authorization: `Bearer ${authToken}`,
@@ -67,22 +67,16 @@ const Compare = () => {
         }
       );
 
-      if (response.status === 200) {
-        console.log('Data successfully sent to the server:', response.data);
-        alert('Data submitted successfully');
-      }
     } catch (error) {
       console.error('Error submitting data:', error);
       alert('Failed to submit data');
     }
 
-    // Mark the row as processed
     const updatedRows = rows.map((row, i) =>
       i === index ? { ...row, processed: true } : row
     );
     setRows(updatedRows);
 
-    // Add a new row after sending the current row
     const newRow = {
       date: new Date().toISOString().slice(0, 10),
       firstName: '',
@@ -90,12 +84,57 @@ const Compare = () => {
       orderId: '',
       amount: '',
       errorSource: 'restaurant',
-      processed: false, // New row is not processed
-      reason: '', // New row has empty reason
+      processed: false,
+      reason: '',
     };
 
     setRows([...updatedRows, newRow]);
   };
+
+  const handleFileUpload = (event) => {
+    setFile(event.target.files[0]);
+  };
+
+  const handleSubmitFile = async () => {
+    const authToken = localStorage.getItem('authToken');
+    const uEmail = localStorage.getItem('userEmail');
+    
+    if (!authToken) {
+      alert('Authorization token is missing');
+      return;
+    }
+  
+    if (!file) {
+      alert('Please select a file to upload');
+      return;
+    }
+  
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('uEmail', uEmail);  // Include uEmail in formData
+  
+    try {
+      const response = await axios.post(
+        'https://localhost:7017/Gateway/UploadFile',
+        formData,  // Send only formData
+        {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
+        }
+      );
+  
+      if (response.status === 200) {
+        alert('File uploaded successfully');
+        // Optionally clear the file input here if needed
+      }
+    } catch (error) {
+      console.error('Error uploading file:', error.response || error);
+      alert('Failed to upload file');
+    }
+  };
+  
+  
 
   return (
     <div
@@ -112,9 +151,9 @@ const Compare = () => {
         border="1"
         style={{
           width: '200%',
-          maxWidth: '1000px', // Ensures the table doesn't stretch too wide
+          maxWidth: '1000px',
           textAlign: 'center',
-          tableLayout: 'fixed', // Ensures uniform column widths
+          tableLayout: 'fixed',
           marginTop: '20px',
         }}
       >
@@ -126,7 +165,7 @@ const Compare = () => {
             <th>מס' הזמנה</th>
             <th>סכום</th>
             <th>טעות שלנו / של וולט</th>
-            <th>סיבה</th> {/* Added column for reason */}
+            <th>סיבה</th>
             <th>אישור</th>
           </tr>
         </thead>
@@ -193,7 +232,7 @@ const Compare = () => {
                   type="text"
                   value={row.reason}
                   placeholder="סיבה"
-                  onChange={(e) => handleChange(index, 'reason', e.target.value)} // Handle reason changes
+                  onChange={(e) => handleChange(index, 'reason', e.target.value)}
                 />
               </td>
               <td>
@@ -216,6 +255,37 @@ const Compare = () => {
           ))}
         </tbody>
       </table>
+      <button
+        onClick={() => setShowFileUpload(!showFileUpload)}
+        style={{
+          marginTop: '20px',
+          backgroundColor: 'blue',
+          color: 'white',
+          border: 'none',
+          padding: '10px 20px',
+          cursor: 'pointer',
+        }}
+      >
+        Compare
+      </button>
+      {showFileUpload && (
+        <div style={{ marginTop: '20px' }}>
+          <input type="file" onChange={handleFileUpload} />
+          <button
+            onClick={handleSubmitFile}
+            style={{
+              marginLeft: '10px',
+              backgroundColor: 'green',
+              color: 'white',
+              border: 'none',
+              padding: '10px 20px',
+              cursor: 'pointer',
+            }}
+          >
+            Submit
+          </button>
+        </div>
+      )}
     </div>
   );
 };
