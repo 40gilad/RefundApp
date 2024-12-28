@@ -6,6 +6,9 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text;
+using System.Security.Cryptography.X509Certificates;
+using Microsoft.AspNetCore.Routing;
+
 
 namespace RefundApp.Controllers
 {
@@ -38,7 +41,10 @@ namespace RefundApp.Controllers
         }
 
         [HttpPost("ProcessRequest")]
-        public async Task<IActionResult> ProcessRequest(string route, [FromBody] object payload, [FromHeader(Name = "Authorization")] string token)
+        public async Task<IActionResult> ProcessRequest(
+            string route, 
+            [FromBody] object? payload,
+            [FromHeader(Name = "Authorization")] string? token)
         {
             logger.LogInformation("Processing request for route: {Route}", route);
             var serviceEndpoint = string.Empty;
@@ -87,6 +93,71 @@ namespace RefundApp.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+
+        [HttpPost("UploadFile")]
+        public async Task<IActionResult> UploadFile(
+            [FromForm] string uEmail,
+            [FromForm] IFormFile file,
+            [FromHeader(Name = "Authorization")] string? token)
+        {
+            // refactore method for production!
+            if (file == null)
+                return BadRequest("Refund data is null.");
+
+            string route = "json-compare";
+            logger.LogInformation("Processing request for route: {Route}", route);
+
+            var serviceEndpoint = "https://localhost:5000/compare"; // The Flask endpoint URL
+
+            try
+            {
+                // Create an HttpClientHandler to disable SSL certificate verification
+                var handler = new HttpClientHandler()
+                {
+                    ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
+                };
+
+                // Create the HttpClient with the custom handler
+                var httpClient = httpClientFactory.CreateClient();
+                httpClient.DefaultRequestHeaders.Accept.Clear();
+                httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                // Now we use the custom handler in the httpClient
+                var client = new HttpClient(handler);
+
+                // Prepare the content to forward (the file)
+                using (var content = new MultipartFormDataContent())
+                {
+                    var fileContent = new StreamContent(file.OpenReadStream());
+                    fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(file.ContentType);
+                    content.Add(fileContent, "file", file.FileName);
+
+                    // Include the JWT token if necessary
+                    if (!string.IsNullOrEmpty(token))
+                    {
+                        client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+                    }
+
+                    // Forward the request to the Flask service
+                    var response = await client.PostAsync(serviceEndpoint, content);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        return Ok(await response.Content.ReadAsStringAsync());
+                    }
+
+                    logger.LogWarning("Error calling service for route: {Route}, StatusCode: {StatusCode}", route, response.StatusCode);
+                    return StatusCode((int)response.StatusCode, await response.Content.ReadAsStringAsync());
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                logger.LogError(ex, "Error calling service for route: {Route}", route);
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+
     }
 }
 
@@ -109,12 +180,26 @@ namespace RefundApp.Controllers
 
 /**************************/
 
-/*
- site: ValueKind = Object : "{"uName":"pipi","uEmail":"","uPassword":"123","sessionId":0}"
- */
+// path to example pdf files: 
+// C:\Users\40gil\Desktop\not_work\my_scipts\RefundApp\RefundApp\DataProcessAndPythonController\PdfProcessor\example pdfs
 
+/**** test endpoiint ******/
+//was in the beggining of the processrequest function
 
-// ValueKind = Object : "{  "uEmail": "string",  "orderId": "string",  "customerName": "string",  "refundDate": "2024-12-25T10:14:26.601Z",  "amount": 0,  "reason": "string",  "isResturantFault": true}"
-// ValueKind = Object : "{"uEmail":"a@b.com","orderId":"123","customerName":"aa b","refundDate":"2024-12-25","amount":"11","reason":"asd","errorSource":false}"
+//var kaki_httpClient = httpClientFactory.CreateClient();
+//kaki_httpClient.DefaultRequestHeaders.Accept.Clear();
+//kaki_httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+//var kaki_response = await kaki_httpClient.PostAsJsonAsync(jwtRequiredServiceEndpoints[route], payload);
+
+//if (kaki_response.IsSuccessStatusCode)
+//{
+//    return Ok(await kaki_response.Content.ReadAsStringAsync());
+//}
+//logger.LogWarning("Error calling service for route: {Route}, StatusCode: {StatusCode}", route, kaki_response.StatusCode);
+//return StatusCode((int)kaki_response.StatusCode, await kaki_response.Content.ReadAsStringAsync());
+
+/**************************/
+
 // path to example pdf files: 
 // C:\Users\40gil\Desktop\not_work\my_scipts\RefundApp\RefundApp\DataProcessAndPythonController\PdfProcessor\example pdfs
