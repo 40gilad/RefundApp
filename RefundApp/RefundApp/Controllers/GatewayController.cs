@@ -100,7 +100,7 @@ namespace RefundApp.Controllers
             [FromForm] IFormFile file,
             [FromHeader(Name = "Authorization")] string? token)
         {
-            // refactore method for production!
+            // refactor method for production!
             if (file == null)
                 return BadRequest("Refund data is null.");
 
@@ -108,6 +108,7 @@ namespace RefundApp.Controllers
             logger.LogInformation("Processing request for route: {Route}", route);
 
             var serviceEndpoint = "https://localhost:5000/compare"; // The Flask endpoint URL
+            var refundServiceEndpoint = "https://localhost:7017/refund/RefundsByMail"; // The Refund API endpoint
 
             try
             {
@@ -125,12 +126,29 @@ namespace RefundApp.Controllers
                 // Now we use the custom handler in the httpClient
                 var client = new HttpClient(handler);
 
-                // Prepare the content to forward (the file)
+                // Execute GET request for GetRefundsByMail method and get the result
+                var getRefundResponse = await client.GetAsync($"{refundServiceEndpoint}?UMail={uEmail}");
+
+                if (!getRefundResponse.IsSuccessStatusCode)
+                {
+                    logger.LogWarning("Error calling Refund service for route: {Route}, StatusCode: {StatusCode}", route, getRefundResponse.StatusCode);
+                    return StatusCode((int)getRefundResponse.StatusCode, await getRefundResponse.Content.ReadAsStringAsync());
+                }
+
+                // Retrieve the refund data (assuming it's JSON)
+                var refundData = await getRefundResponse.Content.ReadAsStringAsync();
+
+                logger.LogInformation("Successfully fetched refund data for email: {UMail}", uEmail);
+
+                // Prepare the content to forward (the file and the refund data)
                 using (var content = new MultipartFormDataContent())
                 {
                     var fileContent = new StreamContent(file.OpenReadStream());
                     fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(file.ContentType);
                     content.Add(fileContent, "file", file.FileName);
+
+                    // Add the refund data to the content
+                    content.Add(new StringContent(refundData), "restaurant_data");
 
                     // Include the JWT token if necessary
                     if (!string.IsNullOrEmpty(token))
@@ -138,7 +156,7 @@ namespace RefundApp.Controllers
                         client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
                     }
 
-                    // Forward the request to the Flask service
+                    // Execute POST request to the Flask endpoint with the file and refund data
                     var response = await client.PostAsync(serviceEndpoint, content);
 
                     if (response.IsSuccessStatusCode)
@@ -146,7 +164,7 @@ namespace RefundApp.Controllers
                         return Ok(await response.Content.ReadAsStringAsync());
                     }
 
-                    logger.LogWarning("Error calling service for route: {Route}, StatusCode: {StatusCode}", route, response.StatusCode);
+                    logger.LogWarning("Error calling Flask service for route: {Route}, StatusCode: {StatusCode}", route, response.StatusCode);
                     return StatusCode((int)response.StatusCode, await response.Content.ReadAsStringAsync());
                 }
             }
@@ -156,6 +174,7 @@ namespace RefundApp.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+
 
 
     }
