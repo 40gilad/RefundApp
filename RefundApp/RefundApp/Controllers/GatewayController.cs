@@ -1,13 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration; // Ensure this is included
-using RefundApp.Models;
-using RefundApp.Utils;
 using System.Net.Http.Headers;
-using System.Net.Http.Json;
-using System.Security.Claims;
-using System.Text;
-using System.Security.Cryptography.X509Certificates;
-using Microsoft.AspNetCore.Routing;
 
 
 namespace RefundApp.Controllers
@@ -181,44 +173,6 @@ namespace RefundApp.Controllers
 }
 
 
-/**** test endpoiint ******/
-//was in the beggining of the processrequest function
-
-//var kaki_httpClient = httpClientFactory.CreateClient();
-//kaki_httpClient.DefaultRequestHeaders.Accept.Clear();
-//kaki_httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
-//var kaki_response = await kaki_httpClient.PostAsJsonAsync(jwtRequiredServiceEndpoints[route], payload);
-
-//if (kaki_response.IsSuccessStatusCode)
-//{
-//    return Ok(await kaki_response.Content.ReadAsStringAsync());
-//}
-//logger.LogWarning("Error calling service for route: {Route}, StatusCode: {StatusCode}", route, kaki_response.StatusCode);
-//return StatusCode((int)kaki_response.StatusCode, await kaki_response.Content.ReadAsStringAsync());
-
-/**************************/
 
 // path to example pdf files: 
-// C:\Users\40gil\Desktop\not_work\my_scipts\RefundApp\RefundApp\DataProcessAndPythonController\PdfProcessor\example pdfs
-
-/**** test endpoiint ******/
-//was in the beggining of the processrequest function
-
-//var kaki_httpClient = httpClientFactory.CreateClient();
-//kaki_httpClient.DefaultRequestHeaders.Accept.Clear();
-//kaki_httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
-//var kaki_response = await kaki_httpClient.PostAsJsonAsync(jwtRequiredServiceEndpoints[route], payload);
-
-//if (kaki_response.IsSuccessStatusCode)
-//{
-//    return Ok(await kaki_response.Content.ReadAsStringAsync());
-//}
-//logger.LogWarning("Error calling service for route: {Route}, StatusCode: {StatusCode}", route, kaki_response.StatusCode);
-//return StatusCode((int)kaki_response.StatusCode, await kaki_response.Content.ReadAsStringAsync());
-
-/**************************/
-
-// path to example pdf files: 
-// C:\Users\40gil\Desktop\not_work\my_scipts\RefundApp\RefundApp\DataProcessAndPythonController\PdfProcessor\example pdfs
+// C:\Users\40gil\Desktop\not_work\my_scipts\RefundApp\RefundApp\DataProcessAndPythonController\DataProcessors\PdfProcessor\example pdfs
