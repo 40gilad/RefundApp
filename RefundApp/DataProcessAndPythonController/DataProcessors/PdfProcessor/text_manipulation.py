@@ -57,24 +57,49 @@ def get_customer_name(record):
     return name
 
 
+
 def dictify_relevant_data_from_record(text):
     ret_list = list()
     listed = listify_each_record(text)
+
     for l in listed:
         curr_line = l.split(" ")
+
         try:
             amount = curr_line[3]
             if amount[0] == "-":
                 amount = amount[1:]
             customer_name = get_customer_name(curr_line)
-            try:
-                refund_date = datetime.strptime(curr_line[16], f'%m/%d/%Y').date()
-            except ValueError:
-                refund_date = datetime.strptime(curr_line[16], f'%d.%m.%Y').date()
-            ret_list.append({"order_id": curr_line[4],
-                             "customer": customer_name,
-                             "amount": int(float(amount)),
-                             "refund_date": refund_date})
+
+            # Check for the date in indices 16 and onwards
+            refund_date = None
+            for i in range(len(curr_line)):
+                try:
+                    # Try to parse the date using multiple formats
+                    refund_date = None
+                    date_formats = ['%m/%d/%Y', '%d.%m.%Y']
+                    for fmt in date_formats:
+                        try:
+                            refund_date = datetime.strptime(curr_line[i], fmt).date()
+                            break  # Break once a valid date is found
+                        except ValueError:
+                            continue
+                    if refund_date:  # If a valid date is found, break the loop
+                        break
+                except ValueError:
+                    continue
+
+            if not refund_date:  # If no valid date was found
+                print(f"Invalid or missing date in record: {l}")
+                continue
+
+            ret_list.append({
+                "order_id": curr_line[4],
+                "customer": customer_name,
+                "amount": int(float(amount)),
+                "refund_date": refund_date
+            })
         except IndexError:
             continue
     return ret_list
+
