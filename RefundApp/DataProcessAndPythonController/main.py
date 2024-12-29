@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 import os
 import sys
+
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 import DataProcessors.PdfProcessor.ProcessPdf as ProcessPdf
@@ -9,14 +10,14 @@ import json
 
 app = Flask(__name__)
 
-def preprocess_data(resturant_raw_json,file):
+
+def preprocess_data(resturant_raw_json, file):
     restaurant_data = rjp.preprocess(json.loads(resturant_raw_json))
     wolt_data = ProcessPdf.extract_json_pdf(file)
-    return restaurant_data,wolt_data
+    return restaurant_data, wolt_data
+
 
 def compare_refunds(wolt_data, restaurant_data):
-    # Create dictionaries for easy lookup by order ID
-    print(f"WOLT:\n{wolt_data}\n----------------------------------\nRESTURANT:\n{restaurant_data}")
     wolt_refunds = {order['order_id']: order['refund_amount'] for order in wolt_data}
     restaurant_refunds = {order['order_id']: order['refund_amount'] for order in restaurant_data}
     discrepancies = []
@@ -39,6 +40,7 @@ def compare_refunds(wolt_data, restaurant_data):
 
     return discrepancies
 
+
 @app.route('/compare', methods=['POST'])
 def compare():
     wolt_data = None
@@ -53,7 +55,7 @@ def compare():
         if not resturant_raw_json:
             return jsonify({"error": "Restaurant data is required"}), 400
 
-        restaurant_data , wolt_data = preprocess_data(resturant_raw_json,file)
+        restaurant_data, wolt_data = preprocess_data(resturant_raw_json, file)
 
     except Exception as e:
         # Return a generic error response for unexpected errors
@@ -62,8 +64,7 @@ def compare():
     discrepancies = compare_refunds(wolt_data, restaurant_data)
     return jsonify(discrepancies)
 
+
 if __name__ == '__main__':
     app.run(ssl_context=('C:/Users/40gil/Desktop/not_work/my_scipts/RefundApp/pems/cert.pem',
                          'C:/Users/40gil/Desktop/not_work/my_scipts/RefundApp/pems/key.pem'))
-
-
