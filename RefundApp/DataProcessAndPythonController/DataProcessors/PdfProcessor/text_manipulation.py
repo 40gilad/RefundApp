@@ -1,3 +1,5 @@
+from datetime import datetime
+
 
 def print_reverse(text):
     print("\n".join(line[::-1] for line in text.splitlines()))
@@ -65,7 +67,11 @@ def dictify_relevant_data_from_record(text):
             if amount[0] == "-":
                 amount = amount[1:]
             customer_name = get_customer_name(curr_line)
-            ret_list.append({"order_id": curr_line[4],"customer":customer_name, "amount": amount})
+            refund_date = datetime.strptime(curr_line[16], '%d.%m.%Y').date()
+            ret_list.append({"order_id": curr_line[4],
+                             "customer": customer_name,
+                             "amount": int(float(amount)),
+                             "refund_date": refund_date})
         except IndexError:
             continue
     return ret_list
