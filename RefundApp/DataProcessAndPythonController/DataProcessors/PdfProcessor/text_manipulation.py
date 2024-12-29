@@ -67,7 +67,10 @@ def dictify_relevant_data_from_record(text):
             if amount[0] == "-":
                 amount = amount[1:]
             customer_name = get_customer_name(curr_line)
-            refund_date = datetime.strptime(curr_line[16], '%d.%m.%Y').date()
+            try:
+                refund_date = datetime.strptime(curr_line[16], f'%m/%d/%Y').date()
+            except ValueError:
+                refund_date = datetime.strptime(curr_line[16], f'%d.%m.%Y').date()
             ret_list.append({"order_id": curr_line[4],
                              "customer": customer_name,
                              "amount": int(float(amount)),
