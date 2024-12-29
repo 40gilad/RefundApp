@@ -3,10 +3,16 @@ import os
 import sys
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-import PdfProcessor.ProcessPdf as ProcessPdf
+import DataProcessors.PdfProcessor.ProcessPdf as ProcessPdf
+import DataProcessors.JsonProcessor.ResturantJsonProcessor as rjp
 import json
 
 app = Flask(__name__)
+
+def preprocess_data(resturant_raw_json,file):
+    restaurant_data = rjp.preprocess(json.loads(resturant_raw_json))
+    wolt_data = ProcessPdf.extract_json_pdf(file)
+    return restaurant_data,wolt_data
 
 def compare_refunds(wolt_data, restaurant_data):
     # Create dictionaries for easy lookup by order ID
@@ -35,10 +41,24 @@ def compare_refunds(wolt_data, restaurant_data):
 
 @app.route('/compare', methods=['POST'])
 def compare():
-    file = request.files['file']
-    resturan_raw_json = request.form.get('restaurant_data')
-    restaurant_data = json.loads(resturan_raw_json)
-    wolt_data = ProcessPdf.extract_json_pdf(file)
+    wolt_data = None
+    restaurant_data = None
+    try:
+        file = request.files['file']
+        resturant_raw_json = request.form.get('restaurant_data')
+
+        if not file:
+            return jsonify({"error": "File is required"}), 400
+
+        if not resturant_raw_json:
+            return jsonify({"error": "Restaurant data is required"}), 400
+
+        restaurant_data , wolt_data = preprocess_data(resturant_raw_json,file)
+
+    except Exception as e:
+        # Return a generic error response for unexpected errors
+        return jsonify({"error": f"An unexpected error occurred: {str(e)}"}), 500
+
     discrepancies = compare_refunds(wolt_data, restaurant_data)
     return jsonify(discrepancies)
 
