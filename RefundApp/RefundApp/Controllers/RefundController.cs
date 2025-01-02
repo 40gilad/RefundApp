@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using RefundApp.Models;
 using RefundApp.PsudoServices;
+using RefundApp.Services;
 
 namespace RefundApp.Controllers
 {
@@ -9,77 +10,48 @@ namespace RefundApp.Controllers
     public class RefundController : ControllerBase
     {
         private readonly ILogger<RefundController> logger;
+        private readonly RefundService refundService;
 
-        public RefundController(ILogger<RefundController> _logger)
+        public RefundController(ILogger<RefundController> _logger, RefundService _refundService)
         {
             logger = _logger;
-        }
-
-        [HttpGet]
-        public ActionResult<List<RefundModel>> Get()
-        {
-            try
-            {
-                var refund = PsudoRefundDbService.Instance().Get();
-                return Ok(refund);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex.Message);
-                return StatusCode(500, ex.Message);
-            }
-        }
-
-        [HttpGet("RefundById")]
-        public ActionResult<RefundModel> GetRefundById(string UMail, string OrderId)
-        {
-            try
-            {
-                var refund = PsudoRefundDbService.Instance().GetByOrderId(UMail, OrderId);
-                return Ok(refund);
-            }
-            catch (KeyNotFoundException ex)
-            {
-                logger.LogError(ex.Message);
-                return NotFound(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex.Message);
-                return StatusCode(500,ex.Message);
-            }
-        }
-
-        [HttpGet("RefundsByMail")]
-        public ActionResult<Dictionary<string,RefundModel>> GetRefundsByMail(string UMail)
-        {
-            try
-            {
-                var refund = PsudoRefundDbService.Instance().GetByUserEmail(UMail);
-                return Ok(refund);
-            }
-            catch (KeyNotFoundException ex)
-            {
-                logger.LogError(ex.Message);
-                return NotFound(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex.Message);
-                return StatusCode(500, ex.Message);
-            }
+            refundService = _refundService;
         }
 
         [HttpPost]
-        public IActionResult Post([FromBody] RefundModel refund)
+        public async Task<IActionResult> Post([FromBody] RefundModel refund)
         {
-            
-            if (refund == null)
-                return BadRequest("Refund data is null.");
-            PsudoRefundDbService.Instance().Add(refund);
-            logger.LogInformation($"added new refund:\n{refund.ToString}\n");
-            return Ok($"Refund {refund.OrderId} added successfully.");
+            try
+            {
+                await refundService.Add(refund);
+                return Ok($"Refund {refund.Id} added successfully with id {refund.Id}");
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
+
+        [HttpGet("{id}")]
+        [HttpGet]
+        public async Task<IActionResult> Get(int? id)
+        {
+            if (id == null)
+            {
+                var l = await refundService.Get();
+                if (l == null || l.Count == 0)
+                    return NotFound("No Refunds Found");
+                return Ok(l);
+            }
+            else
+            {
+                var u = await refundService.Get(id.Value);
+                if (u is null)
+                    return NotFound($"Refund {id} Not Found");
+                return Ok(u);
+            }
+        }
+
 
         [HttpDelete("DeleteById")]
         public IActionResult Delete(string UMail, string OrderId)

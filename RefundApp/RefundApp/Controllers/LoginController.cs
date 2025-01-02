@@ -10,7 +10,7 @@ namespace RefundApp.Controllers
     public class LoginController : ControllerBase
     {
         private readonly ILogger<LoginController> logger;
-        private readonly string secretKey; 
+        private readonly string secretKey;
         private readonly LoginService loginService;
 
 
@@ -25,13 +25,9 @@ namespace RefundApp.Controllers
         [HttpPost]
         public async Task<IActionResult> Register([FromBody] UserModel user)
         {
-
-            if (user == null)
-                return BadRequest("User data is null.");
             try
             {
                 user.UPassword = PasswordHasher.HashPassword(user.UPassword);
-                //await PsudoUserDbService.Instance().Add(user);
                 await loginService.Add(user);
                 logger.LogInformation($"added new user:\n{user.ToString}\n");
                 return Ok($"User {user.UName} added successfully with id {user.Id}");
@@ -42,43 +38,49 @@ namespace RefundApp.Controllers
             }
         }
 
+        
         [HttpPost]
         public async Task<IActionResult> Login([FromBody] UserModel user)
         {
-            if (user == null)
-                return BadRequest("User data is null.");
-
-            try
-            {
-                if (!await loginService.UserAuth(user))
-                    return BadRequest("Invalid password.");
-                string Token = JwtUtils.GenerateJwtToken(user.UEmail, secretKey);
-                return Ok(new { Message = "Login successful.", Token = Token });
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
+            if (!await loginService.UserAuth(user))
+                return NotFound($"User {user} Not Found");
+            string Token = JwtUtils.GenerateJwtToken(user.UEmail, secretKey);
+            return Ok(new { Message = "Login successful.", Token = Token });
         }
 
-        [HttpPut]
-        public IActionResult Put([FromBody] UserModel user)
+        [HttpGet("{id}")]
+        [HttpGet]
+        public async Task<IActionResult> Get(int? id)
         {
-            if (user == null)
-                return BadRequest("user data is null.");
-            UserModel u;
-            try
+            if (id == null)
             {
-                u = PsudoUserDbService.Instance().Get(user.UEmail);
+                var l = await loginService.Get();
+                if (l == null || l.Count == 0)
+                    return NotFound("No Users Found");
+                return Ok(l);
             }
-            catch (KeyNotFoundException ex)
+            else
             {
-                return NotFound(ex.Message);
+                var u = await loginService.Get(id.Value);
+                if (u is null)
+                    return NotFound($"User {id} Not Found");
+                return Ok(u);
             }
-            if (u.UPassword != user.UPassword)
-                return BadRequest();
-            PsudoUserDbService.Instance().Update(user);
+        }
+        [HttpPut]
+        public async Task<IActionResult> Put([FromBody] UserModel user)
+        {
+            if (! await loginService.Update(user))
+                return NotFound($"User {user} Not Found");
             return Ok();
+        }
+
+        [HttpDelete]
+        public async Task<IActionResult> Delete(int id)
+        {
+            if (await loginService.Delete(id))
+                return Ok();
+            return BadRequest($"User {id} not found");
         }
 
 

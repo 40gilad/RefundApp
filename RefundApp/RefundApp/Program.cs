@@ -13,6 +13,7 @@ builder.Services.AddHttpClient<GatewayController>();
 
 // Register LoginService here
 builder.Services.AddScoped<LoginService>(); // Add LoginService to DI container
+builder.Services.AddScoped<RefundService>(); // Add LoginService to DI container
 
 // Register DbContext and use the connection string from the configuration
 builder.Services.AddDbContext<RefundAppDbContext>(options =>

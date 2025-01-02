@@ -5,9 +5,10 @@ namespace RefundApp.Models
 {
     public class RefundModel
     {
-        public required string UEmail { get; set; }
         [Key]
+        public string Id { get; set; }
         public required string OrderId { get; set; }
+        public required string UEmail { get; set; }
         public required string CustomerName { get; set; }
         public required DateTime RefundDate { get; set; }
         public required float Amount { get; set; }

@@ -50,7 +50,7 @@ namespace RefundApp.PsudoServices
             {
                 if (!refunds.ContainsKey(refund.UEmail))
                     refunds[refund.UEmail] = new Dictionary<string, RefundModel>();
-                refunds[refund.UEmail][refund.OrderId] = refund;
+                refunds[refund.UEmail][refund.Id] = refund;
             }
             else
                 throw new ArgumentNullException("User mail or refund cannot be null");
