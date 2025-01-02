@@ -1,6 +1,8 @@
 ﻿using RefundApp.Models;
+using RefundApp.Data;
 using RefundApp.Utils;
 using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
 
 namespace RefundApp.PsudoServices
 {
@@ -9,18 +11,22 @@ namespace RefundApp.PsudoServices
         private static Dictionary<string, UserModel> users;
         private static PsudoUserDbService instance;
         private static readonly object lockObj = new object();
-
-        private PsudoUserDbService()
+        private readonly RefundAppDbContext _context;
+        private PsudoUserDbService(RefundAppDbContext context)
         {
             users = new Dictionary<string, UserModel>();
-
+            _context = context;
         }
-        public static PsudoUserDbService Instance()
+        public static PsudoUserDbService Instance(RefundAppDbContext context=null)
         {
             lock (lockObj)
             {
                 if (instance == null)
-                    instance = new PsudoUserDbService();
+                {
+                    if (context is null)
+                        throw new ArgumentNullException(nameof(context));
+                    instance = new PsudoUserDbService(context);
+                }
                 return instance;
             }
         }
@@ -37,14 +43,15 @@ namespace RefundApp.PsudoServices
             return users[user_mail];
         }
 
-        public void Add(UserModel user)
+        public async Task Add(UserModel user)
         {
             if (user != null)
             {
                 if (users.ContainsKey(user.UEmail))
                     throw new InvalidOperationException($"User Email {user.UEmail} already exists.");
 
-                users.Add(user.UEmail, user);
+                _context.Users.Add(user);
+                await _context.SaveChangesAsync();
             }
         }
 
@@ -63,3 +70,12 @@ namespace RefundApp.PsudoServices
         }
     }
 }
+
+/*
+ {
+  "id": 11,
+  "uName": "admin",
+  "uEmail": "a@b.com",
+  "uPassword": "123"
+}
+*/

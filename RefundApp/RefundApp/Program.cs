@@ -1,10 +1,22 @@
 using RefundApp.Controllers;
+using RefundApp.Data;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using RefundApp.PsudoServices;
+using RefundApp.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Add services to the container before building the app.
 builder.Services.AddControllers();
 builder.Services.AddHttpClient<GatewayController>();
+
+// Register LoginService here
+builder.Services.AddScoped<LoginService>(); // Add LoginService to DI container
+
+// Register DbContext and use the connection string from the configuration
+builder.Services.AddDbContext<RefundAppDbContext>(options =>
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Add CORS services
 builder.Services.AddCors(options =>
@@ -29,7 +41,16 @@ builder.Services.AddSession(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-var app = builder.Build();
+var app = builder.Build(); // Build the app after registering all services
+
+// Ensure the database is created
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var context = services.GetRequiredService<RefundAppDbContext>();
+    context.Database.EnsureCreated();
+    //PsudoUserDbService.Instance(context);
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

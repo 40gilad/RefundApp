@@ -3,18 +3,16 @@ using System.Xml.Linq;
 
 namespace RefundApp.Models
 {
+
     public class UserModel
     {
-        [Required]
-        public string UName { get; set; }
+        public int Id { get; set; }
+        public required string UName { get; set; }
 
-        [Required]
-        [EmailAddress]
-        public string UEmail { get; set; }
+        public required string UEmail { get; set; }
 
-        [Required]
         [DataType(DataType.Password)]
-        public string UPassword { get; set; }
+        public required string UPassword { get; set; }
 
         public UserModel() { }
 
@@ -41,22 +39,6 @@ namespace RefundApp.Models
             UEmail = other.UEmail;
             UPassword = other.UPassword;
         }
-
-        public UserModel(Dictionary<string, string> data)
-        {
-            if (string.IsNullOrWhiteSpace(data["userName"]))
-                throw new ArgumentException("Password cannot be null or empty", nameof(data));
-            if (string.IsNullOrWhiteSpace(data["email"]))
-                throw new ArgumentException("Email cannot be null or empty", nameof(data));
-            if (string.IsNullOrWhiteSpace(data["password"]))
-                throw new ArgumentException("User Name cannot be null or empty", nameof(data));
-
-            UName = data["userName"];
-            UEmail = data["email"];
-            UPassword = data["password"];
-        }
-
-        
 
         public override string ToString()
         {

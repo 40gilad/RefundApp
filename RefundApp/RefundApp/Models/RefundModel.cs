@@ -1,20 +1,21 @@
 ﻿using Microsoft.AspNetCore.Http;
+using System.ComponentModel.DataAnnotations;
 
 namespace RefundApp.Models
 {
     public class RefundModel
     {
-        public string UEmail { get; set; }
-        public string OrderId { get; set; }
-        public string CustomerName { get; set; }
-        public DateTime RefundDate { get; set; }
-        public float Amount { get; set; }
+        public required string UEmail { get; set; }
+        [Key]
+        public required string OrderId { get; set; }
+        public required string CustomerName { get; set; }
+        public required DateTime RefundDate { get; set; }
+        public required float Amount { get; set; }
         public string Reason { get; set; }
-
-        public bool IsResturantFault { get; set; }
+        public required bool IsResturantFault { get; set; }
 
         public RefundModel() { }
-        public RefundModel(string u_email,string order_id, string customer_name, DateTime refund_date,float amount, string reason, bool is_rest_fault)
+        public RefundModel(string u_email,string order_id, string customer_name, DateTime refund_date,float amount, string? reason, bool is_rest_fault)
         {
             if (string.IsNullOrEmpty(u_email))
                 throw new ArgumentNullException(nameof(u_email));

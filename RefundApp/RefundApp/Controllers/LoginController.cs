@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using RefundApp.Models;
 using RefundApp.PsudoServices;
+using RefundApp.Services;
 using RefundApp.Utils;
 namespace RefundApp.Controllers
 {
@@ -9,28 +10,31 @@ namespace RefundApp.Controllers
     public class LoginController : ControllerBase
     {
         private readonly ILogger<LoginController> logger;
-        private readonly string secretKey; // Add this field
+        private readonly string secretKey; 
+        private readonly LoginService loginService;
 
-        public LoginController(ILogger<LoginController> _logger, IConfiguration configuration)
+
+        public LoginController(ILogger<LoginController> _logger, IConfiguration configuration, LoginService _loginService)
         {
             logger = _logger;
             secretKey = configuration["Jwt:SecretKey"];
+            loginService = _loginService;
         }
 
         [Route("Register")]
         [HttpPost]
-        public IActionResult Register([FromBody] UserModel user)
+        public async Task<IActionResult> Register([FromBody] UserModel user)
         {
-            //register logic
-            
+
             if (user == null)
-                return BadRequest("user data is null.");
+                return BadRequest("User data is null.");
             try
             {
                 user.UPassword = PasswordHasher.HashPassword(user.UPassword);
-                PsudoUserDbService.Instance().Add(user);
+                //await PsudoUserDbService.Instance().Add(user);
+                await loginService.Add(user);
                 logger.LogInformation($"added new user:\n{user.ToString}\n");
-                return Ok($"User {user.UName} added successfully.");
+                return Ok($"User {user.UName} added successfully with id {user.Id}");
             }
             catch (InvalidOperationException ex)
             {
@@ -39,14 +43,14 @@ namespace RefundApp.Controllers
         }
 
         [HttpPost]
-        public IActionResult Login([FromBody] UserModel user)
+        public async Task<IActionResult> Login([FromBody] UserModel user)
         {
             if (user == null)
                 return BadRequest("User data is null.");
 
             try
             {
-                if (!UserAuth(user))
+                if (!await loginService.UserAuth(user))
                     return BadRequest("Invalid password.");
                 string Token = JwtUtils.GenerateJwtToken(user.UEmail, secretKey);
                 return Ok(new { Message = "Login successful.", Token = Token });
@@ -77,14 +81,6 @@ namespace RefundApp.Controllers
             return Ok();
         }
 
-
-        private bool UserAuth(UserModel user)
-        {
-            var storedUser = PsudoUserDbService.Instance().Get(user.UEmail);
-            var hashedPassword = PasswordHasher.HashPassword(user.UPassword);
-
-            return PasswordHasher.VerifyPassword(storedUser.UPassword, user.UPassword);
-        }
 
     }
 }
